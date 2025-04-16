@@ -1,6 +1,10 @@
 # couch
 A repo for the couch project
 
+![image](https://github.com/user-attachments/assets/8733a3e6-5d20-4e4f-abc9-e3c5d363d6f4)
+
+![imageback](https://github.com/user-attachments/assets/67efe485-e7da-493e-9dc1-1bf8361e372d)
+
 The couch was just our living room couch. It felt lonely in there. But we set it free.
 
 ## 1: create 2 mobile platforms and fix them to the couch.
