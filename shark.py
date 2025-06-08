@@ -1,7 +1,7 @@
 import datetime
 import serial
 
-ser = serial.Serial('/dev/tty.usbserial-BG013RRQ', baudrate=38400, bytesize=serial.EIGHTBITS,
+ser = serial.Serial('/dev/ttyUSB0', baudrate=38400, bytesize=serial.EIGHTBITS,
                     parity=serial.PARITY_NONE, stopbits=serial.STOPBITS_TWO,)
 
 
