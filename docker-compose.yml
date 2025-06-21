@@ -1,0 +1,24 @@
+version: "2.4"
+services:
+  wheelchair_left:
+    container_name: wheelchair_left
+    image: couch:latest
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONPATH=/app
+      - SERIAL_PORT=/dev/ttyUSB0
+    command: python -m couch.server.cli
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    devices:
+      - "/dev/ttyUSB0:/dev/ttyUSB0"
+    privileged: true
+    stdin_open: true
+    tty: true
+    group_add:
+      - dialout

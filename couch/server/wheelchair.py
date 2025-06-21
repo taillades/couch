@@ -95,8 +95,16 @@ class WheelchairServer:
             except Exception as e:
                 raise HTTPException(status_code=500, detail=f"Failed to get status: {e}")
         
-        return app
+        @app.get("/health")
+        async def health() -> dict:
+            """
+            Check the health of the wheelchair server.
+            
+            :return: Health status
+            """
+            return {"status": "healthy"}
 
+        return app
 
 
 def run_server(serial_port: str, host: str = "0.0.0.0", port: int = 8000, reload: bool = False) -> None:
