@@ -19,7 +19,7 @@ LOOP_WAIT_TIME: Final[float] = 0.016
 class WheelchairState:
     """Current state of the wheelchair."""
     speed: float = 0.0
-    direction: float = 1.0
+    direction: float = 0.0
 
 
 def build_runtime_packet(speed: int, direction: int) -> bytes:
