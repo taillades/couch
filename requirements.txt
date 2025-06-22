@@ -5,3 +5,4 @@ pyserial==3.5
 requests==2.32.3
 typer==0.9.0
 httpx==0.25.2
+inputs==0.5

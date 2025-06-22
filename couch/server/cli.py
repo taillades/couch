@@ -2,7 +2,7 @@
 
 import typer
 
-from couch.server import controller, wheelchair
+from couch.server import controller, joystick,  wheelchair
 
 app = typer.Typer()
 
@@ -48,7 +48,7 @@ def run_wheelchair_server(
 
 
 @app.command()
-def run_differential_wheelchair_server(
+def run_controller_server(
     host: str = typer.Option(
         "0.0.0.0",
         envvar="HOST",
@@ -100,5 +100,26 @@ def run_differential_wheelchair_server(
     )
 
 
+@app.command()
+def run_joystick_server(
+    host: str = typer.Option(
+        "0.0.0.0",
+        envvar="HOST",
+        help="Host to bind the server to (from HOST env var if not provided)",
+    ),
+    port: int = typer.Option(
+        8000,
+        envvar="PORT",
+        help="Port to bind the server to (from PORT env var if not provided)",
+    ),
+    reload: bool = typer.Option(
+        False,
+        envvar="RELOAD",
+        help="Whether to enable auto-reload on code changes (from RELOAD env var if not provided)",
+    ),
+) -> None:
+    """Run the joystick server."""
+    joystick.run_server(host=host, port=port, reload=reload)
+    
 if __name__ == "__main__":
     app()

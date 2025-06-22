@@ -54,7 +54,7 @@ services:
       - PYTHONPATH=/app
       - LEFT_WHEELCHAIR_URL=http://wheelchair_left:8000
       - RIGHT_WHEELCHAIR_URL=http://wheelchair_right:8000
-    command: python -m couch.server.cli run_differential_wheelchair_server
+    command: python -m couch.server.cli run-controller-server
     depends_on:
       wheelchair_left:
         condition: service_healthy
