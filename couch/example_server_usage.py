@@ -13,7 +13,7 @@ def send_command(speed: float, direction: float) -> Dict[str, Any]:
     :param direction: Direction value between -1.0 and 1.0
     :return: Server response
     """
-    url = "http://localhost:8000/control"
+    url = "http://wheelchair_left:8000/control"
     data = {"speed": speed, "direction": direction}
     
     response = requests.post(url, json=data)
@@ -27,7 +27,7 @@ def get_status() -> Dict[str, Any]:
     
     :return: Current status
     """
-    url = "http://localhost:8000/status"
+    url = "http://wheelchair_left:8000/status"
     
     response = requests.get(url)
     response.raise_for_status()
@@ -47,15 +47,15 @@ def main() -> None:
         
         # Move forward at half speed
         print("\nMoving wheelchair forward at half speed...")
-        response = send_command(speed=0.0, direction=0.0)
+        response = send_command(speed=0.1, direction=0.0)
         print(f"Command response: {response}")
         time.sleep(2)
         
-        # # Stop
-        # print("\nStopping wheelchair...")
-        # response = send_command(speed=0.0, direction=1.0)
-        # print(f"Command response: {response}")
-        # time.sleep(1)
+        # Stop
+        print("\nStopping wheelchair...")
+        response = send_command(speed=0.0, direction=0.0)
+        print(f"Command response: {response}")
+        time.sleep(1)
         
         # # Move backward at quarter speed
         # print("\nMoving wheelchair backward at quarter speed...")
@@ -75,7 +75,7 @@ def main() -> None:
         
     except requests.exceptions.ConnectionError:
         print("Error: Could not connect to the server.")
-        print("Make sure the server is running with: python -m couch.server.wheelchair")
+        print("Make sure the server is running.")
     except requests.exceptions.HTTPError as e:
         print(f"HTTP Error: {e}")
     except Exception as e:

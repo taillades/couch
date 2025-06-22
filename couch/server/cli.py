@@ -2,7 +2,7 @@
 
 import typer
 
-from couch.server import controller, joystick, wheelchair, main
+from couch.server import controller, joystick, wheelchair, main, observer
 
 app = typer.Typer()
 
@@ -163,6 +163,21 @@ def run_main_server(
         update_rate=update_rate,
         deadzone=deadzone,
     )
+    
+@app.command()
+def run_observer(
+    server_url: str = typer.Option(
+        None,
+        envvar="JOYSTICK_SERVER_URL",
+        help="URL of the joystick server (from JOYSTICK_SERVER_URL env var if not provided)",
+    ),
+) -> None:
+    """Run the joystick observer."""
+    if not server_url:
+        raise RuntimeError(
+            "JOYSTICK_SERVER_URL environment variable is not set and no server_url was provided"
+        )
+    observer.run_server(server_url)
 
 if __name__ == "__main__":
     app()

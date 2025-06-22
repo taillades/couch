@@ -1,6 +1,6 @@
 """Server for providing joystick data via HTTP API."""
 
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
@@ -17,14 +17,20 @@ class JoystickData(BaseModel):
     y: float
     button_a: bool
     button_b: bool
-
+    button_x: bool
+    button_y: bool
+    button_up: bool
+    button_down: bool
+    button_left: bool
+    button_right: bool
+    button_start: bool
 
 class JoystickServer:
     """Server for providing joystick data via HTTP API."""
     
     def __init__(self) -> None:
         """Initialize the joystick server."""
-        self.remote: Optional[xbox.XboxRemote] = None
+        self.remote = xbox.XboxRemote()
         self.app = FastAPI(title="Joystick Server", version="1.0.0", lifespan=self._lifespan)
         self._setup_routes()
         
@@ -32,7 +38,6 @@ class JoystickServer:
     async def _lifespan(self, app: FastAPI):
         """Lifespan context manager for startup and shutdown events."""
         try:
-            self.remote = xbox.XboxRemote()
             self.remote.start()
             print("Joystick controller initialized and started")
         except Exception as e:
@@ -72,7 +77,14 @@ class JoystickServer:
                 x=x,
                 y=y,
                 button_a=self.remote.button_a,
-                button_b=self.remote.button_b
+                button_b=self.remote.button_b,
+                button_x=self.remote.button_x,
+                button_y=self.remote.button_y,
+                button_up=self.remote.button_up,
+                button_down=self.remote.button_down,
+                button_left=self.remote.button_left,
+                button_right=self.remote.button_right,
+                button_start=self.remote.button_start,
             )
             
         @self.app.get("/joystick/speed-direction")
@@ -101,7 +113,14 @@ class JoystickServer:
                 
             return {
                 "button_a": self.remote.button_a,
-                "button_b": self.remote.button_b
+                "button_b": self.remote.button_b,
+                "button_x": self.remote.button_x,
+                "button_y": self.remote.button_y,
+                "button_up": self.remote.button_up,
+                "button_down": self.remote.button_down,
+                "button_left": self.remote.button_left,
+                "button_right": self.remote.button_right,
+                "button_start": self.remote.button_start,
             }
             
         @self.app.get("/status")
@@ -116,7 +135,7 @@ class JoystickServer:
                 "running": self.remote._running
             }
             
-    def run(self, host: str = "0.0.0.0", port: int = 8000) -> None:
+    def run(self, host: str = "0.0.0.0", port: int = 8000, reload: bool = False) -> None:
         """
         Run the joystick server.
         
@@ -124,10 +143,9 @@ class JoystickServer:
             host: Host to bind to
             port: Port to bind to
         """
-        uvicorn.run(self.app, host=host, port=port)
+        uvicorn.run(self.app, host=host, port=port, reload=reload)
 
 def run_server(host: str = "0.0.0.0", port: int = 8000, reload: bool = False) -> None:
     """Run the joystick server."""
     server = JoystickServer()
-    uvicorn.run(server.app, host=host, port=port, reload=reload)
-
+    server.run(host=host, port=port, reload=reload)

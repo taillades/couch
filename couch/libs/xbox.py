@@ -2,7 +2,6 @@ import threading
 import time
 from typing import Optional, Callable, Dict, Any
 from inputs import get_gamepad
-import math
 
 
 class XboxRemote:
@@ -20,6 +19,13 @@ class XboxRemote:
         # Button states
         self.button_a = False
         self.button_b = False
+        self.button_x = False
+        self.button_y = False
+        self.button_up = False
+        self.button_down = False
+        self.button_left = False
+        self.button_right = False
+        self.button_start = False
         
         # Callbacks
         self._callbacks: Dict[str, Callable] = {}
@@ -67,6 +73,30 @@ class XboxRemote:
             elif event.code == 'BTN_EAST':
                 self.button_b = bool(event.state)
                 self._trigger_callback('button_b', self.button_b)
+            elif event.code == 'BTN_WEST':
+                self.button_x = bool(event.state)
+                self._trigger_callback('button_x', self.button_x)
+            elif event.code == 'BTN_NORTH':
+                self.button_y = bool(event.state)
+                self._trigger_callback('button_y', self.button_y)
+            elif event.code == 'BTN_SELECT':
+                self.button_start = bool(event.state)
+                self._trigger_callback('button_start', self.button_start)
+            elif event.code == 'BTN_START':
+                self.button_start = bool(event.state)
+                self._trigger_callback('button_start', self.button_start)
+            elif event.code == 'BTN_MODE':
+                self.button_up = bool(event.state)
+                self._trigger_callback('button_up', self.button_up)
+            elif event.code == 'BTN_SELECT':
+                self.button_down = bool(event.state)
+                self._trigger_callback('button_down', self.button_down)
+            elif event.code == 'BTN_SELECT':
+                self.button_left = bool(event.state)
+                self._trigger_callback('button_left', self.button_left)
+            elif event.code == 'BTN_SELECT':
+                self.button_right = bool(event.state)
+                self._trigger_callback('button_right', self.button_right)
                 
     def _normalize_axis(self, value: int) -> float:
         """Normalize axis value from raw input to -1.0 to 1.0 range."""
@@ -82,29 +112,7 @@ class XboxRemote:
                 self._callbacks[event_type](value)
             except Exception as e:
                 print(f"Error in callback for {event_type}: {e}")
-                
-    def get_joystick_speed_direction(self) -> tuple[float, float]:
-        """
-        Get speed and direction from left joystick.
-        
-        Returns:
-            tuple: (speed, direction) where speed is 0.0-1.0 and direction is 0.0-1.0
-        """
-        # Calculate magnitude (speed) from joystick position
-        magnitude = math.sqrt(self.left_x**2 + self.left_y**2)
-        speed = min(1.0, magnitude)
-        
-        # Calculate direction (angle) from joystick position
-        if magnitude > 0:
-            # Convert to degrees and normalize to 0-1 range
-            angle = math.degrees(math.atan2(self.left_y, self.left_x))
-            # Convert from -180 to 180 range to 0 to 1 range
-            direction = (angle + 180) / 360.0
-        else:
-            direction = 0.0
-            
-        return speed, direction
-        
+
     def get_joystick_xy(self) -> tuple[float, float]:
         """
         Get raw X and Y joystick values.
@@ -113,6 +121,15 @@ class XboxRemote:
             tuple: (x, y) values in -1.0 to 1.0 range
         """
         return self.left_x, self.left_y
+    
+    def get_joystick_speed_direction(self) -> tuple[float, float]:
+        """
+        Get speed and direction from left joystick.
+        
+        Returns:
+            tuple: (speed, direction) where speed is x and direction is y
+        """
+        return self.left_y, -self.left_x
         
     def add_button_callback(self, button: str, callback: Callable) -> None:
         """
@@ -143,8 +160,9 @@ class XboxRemote:
         """
         try:
             # Try to get events to test connection
-            events = get_gamepad()
+            get_gamepad()
             return True
-        except:
+        except Exception as e:
+            print(f"Error checking connection: {e}")
             return False
 

@@ -72,6 +72,8 @@ services:
     container_name: joystick
     hostname: joystick
     image: couch:latest
+    environment:
+      - PYTHONPATH=/app
     command: python -m couch.server.cli run-joystick-server
     restart: unless-stopped
     healthcheck:
@@ -80,7 +82,33 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
-    
+    devices:
+      - "/dev/input/event1:/dev/input/event1"
+      - "/dev/input/js0:/dev/input/js0"
+    volumes:
+      - "/dev/input/by-id:/dev/input/by-id"
+    privileged: true
+    stdin_open: true
+    tty: true
+    group_add:
+      - 104
+
+  observer:
+    container_name: observer
+    hostname: observer
+    image: couch:latest
+    environment:
+      - PYTHONPATH=/app
+      - JOYSTICK_SERVER_URL=http://joystick:8000
+    command: python -m couch.server.cli run-observer
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
   main:
     container_name: main
     hostname: main
