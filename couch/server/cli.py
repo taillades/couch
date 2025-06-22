@@ -2,7 +2,7 @@
 
 import typer
 
-from couch.server import controller, joystick,  wheelchair
+from couch.server import controller, joystick, wheelchair, main
 
 app = typer.Typer()
 
@@ -121,5 +121,48 @@ def run_joystick_server(
     """Run the joystick server."""
     joystick.run_server(host=host, port=port, reload=reload)
     
+@app.command()
+def run_main_server(
+    host: str = typer.Option(
+        "0.0.0.0",
+        envvar="HOST",
+        help="Host to bind the server to (from HOST env var if not provided)",
+    ),
+    port: int = typer.Option(
+        8000,
+        envvar="PORT",
+        help="Port to bind the server to (from PORT env var if not provided)",
+    ),
+    joystick_server_url: str = typer.Option(
+        None,
+        envvar="JOYSTICK_SERVER_URL",
+        help="URL of the joystick server (from JOYSTICK_SERVER_URL env var if not provided)",
+    ),
+    controller_server_url: str = typer.Option(
+        None,
+        envvar="CONTROLLER_SERVER_URL",
+        help="URL of the controller server (from CONTROLLER_SERVER_URL env var if not provided)",
+    ),
+    update_rate: float = typer.Option(
+        None,
+        envvar="UPDATE_RATE",
+        help="Update rate in Hz for the control loop (from UPDATE_RATE env var if not provided)",
+    ),
+    deadzone: float = typer.Option(
+        None,
+        envvar="DEADZONE",
+        help="Minimum joystick value to register as input (from DEADZONE env var if not provided)",
+    ),
+) -> None:
+    """Run the main control server that coordinates joystick input and wheelchair control."""
+    main.run_server(
+        host=host,
+        port=port,
+        joystick_server_url=joystick_server_url,
+        controller_server_url=controller_server_url,
+        update_rate=update_rate,
+        deadzone=deadzone,
+    )
+
 if __name__ == "__main__":
     app()

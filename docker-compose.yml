@@ -67,3 +67,37 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
+
+  joystick:
+    container_name: joystick
+    hostname: joystick
+    image: couch:latest
+    command: python -m couch.server.cli run-joystick-server
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    
+  main:
+    container_name: main
+    hostname: main
+    image: couch:latest
+    environment:
+      - PYTHONPATH=/app
+      - JOYSTICK_SERVER_URL=http://joystick:8000
+      - CONTROLLER_SERVER_URL=http://controller:8000
+    command: python -m couch.server.cli run-main-server
+    depends_on:
+      joystick:
+        condition: service_healthy
+      controller:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
