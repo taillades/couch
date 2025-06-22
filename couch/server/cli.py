@@ -29,6 +29,11 @@ def run_wheelchair_server(
         envvar="SERIAL_PORT",
         help="Serial port for the wheelchair controller (from SERIAL_PORT env var if not provided)",
     ),
+    max_idle_time: float = typer.Option(
+        None,
+        envvar="MAX_IDLE_TIME",
+        help="Maximum idle time in seconds before the controller resets the state to idle (from MAX_IDLE_TIME env var if not provided)",
+    ),
 ) -> None:
     """
     Run the wheelchair server.
@@ -41,6 +46,7 @@ def run_wheelchair_server(
         )
     wheelchair.run_server(
         serial_port=serial_port,
+        max_idle_time=max_idle_time,
         host=host,
         port=port,
         reload=reload,

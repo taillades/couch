@@ -8,14 +8,15 @@ from couch.libs import command, shark
 class WheelchairService:
     """Service class for wheelchair operations. Connects to the wheelchair controller and sends commands to it."""
     
-    def __init__(self, serial_port: str) -> None:
+    def __init__(self, serial_port: str, max_idle_time: float) -> None:
         """
         Initialize the wheelchair service.
         
         :param serial_port: Serial port for the wheelchair controller
+        :param max_idle_time: Maximum idle time in seconds before the controller resets the state to idle.
         """
         self.serial_port = serial_port
-        self.controller = shark.WheelchairController(port=self.serial_port)
+        self.controller = shark.WheelchairController(port=self.serial_port, max_idle_time=max_idle_time)
         self.controller.start()
     
     def control(self, speed: float, direction: float) -> None:
@@ -43,13 +44,13 @@ class WheelchairService:
 class WheelchairServer:
     """Main server class for the wheelchair API. Exposes a REST API to control the wheelchair."""
     
-    def __init__(self, serial_port: str) -> None:
+    def __init__(self, serial_port: str, max_idle_time: float) -> None:
         """
         Initialize the wheelchair server.
         
         :param serial_port: Serial port for the wheelchair controller
         """
-        self.service = WheelchairService(serial_port)
+        self.service = WheelchairService(serial_port, max_idle_time)
         self.app = self._create_app()
     
     def _create_app(self) -> FastAPI:
@@ -66,7 +67,6 @@ class WheelchairServer:
             """
             try:
                 self.service.control(command.speed, command.direction)
-                
                 return {
                     "message": "Wheelchair command received",
                     "speed": command.speed,
@@ -99,16 +99,17 @@ class WheelchairServer:
         return app
 
 
-def run_server(serial_port: str, host: str = "0.0.0.0", port: int = 8000, reload: bool = False) -> None:
+def run_server(serial_port: str, max_idle_time: float | None = None, host: str = "0.0.0.0", port: int = 8000, reload: bool = False) -> None:
     """
     Run the FastAPI server using uvicorn.
     
     :param serial_port: Serial port for the wheelchair controller
+    :param max_idle_time: Maximum idle time in seconds before the controller resets the state to idle.
     :param host: Host to bind the server to
     :param port: Port to bind the server to
     :param reload: Whether to enable auto-reload on code changes
     """
-    server = WheelchairServer(serial_port)
+    server = WheelchairServer(serial_port, max_idle_time or shark.DEFAULT_MAX_IDLE_TIME)
     
     uvicorn.run(
         server.app,
