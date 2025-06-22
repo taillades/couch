@@ -2,13 +2,12 @@ version: "2.4"
 services:
   wheelchair_left:
     container_name: wheelchair_left
+    hostname: wheelchair_left
     image: couch:latest
-    ports:
-      - "8000:8000"
     environment:
       - PYTHONPATH=/app
       - SERIAL_PORT=/dev/ttyUSB0
-    command: python -m couch.server.cli
+    command: python -m couch.server.cli run-wheelchair-server
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
@@ -17,8 +16,54 @@ services:
       start_period: 40s
     devices:
       - "/dev/ttyUSB0:/dev/ttyUSB0"
+    restart: unless-stopped
     privileged: true
     stdin_open: true
     tty: true
     group_add:
       - dialout
+
+  wheelchair_right:
+    container_name: wheelchair_right
+    hostname: wheelchair_right
+    image: couch:latest
+    environment:
+      - PYTHONPATH=/app
+      - SERIAL_PORT=/dev/ttyUSB1
+    command: python -m couch.server.cli run-wheelchair-server
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    devices:
+      - "/dev/ttyUSB1:/dev/ttyUSB1"
+    restart: unless-stopped
+    privileged: true
+    stdin_open: true
+    tty: true
+    group_add:
+      - dialout
+
+  controller:
+    container_name: controller
+    hostname: controller
+    image: couch:latest
+    environment:
+      - PYTHONPATH=/app
+      - LEFT_WHEELCHAIR_URL=http://wheelchair_left:8000
+      - RIGHT_WHEELCHAIR_URL=http://wheelchair_right:8000
+    command: python -m couch.server.cli run_differential_wheelchair_server
+    depends_on:
+      wheelchair_left:
+        condition: service_healthy
+      wheelchair_right: 
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s

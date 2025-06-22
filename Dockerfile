@@ -21,4 +21,4 @@ RUN useradd --create-home --shell /bin/bash app \
 USER app
 
 # Expose ports
-EXPOSE 8000 8001 8002 8003 8004
+EXPOSE 8000

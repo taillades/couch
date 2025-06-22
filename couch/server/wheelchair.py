@@ -1,20 +1,12 @@
 """FastAPI server to control the couch using the shark library."""
 
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
 import uvicorn
 
-from couch.libs import shark
-
-
-class WheelchairCommand(BaseModel):
-    """Request model for wheelchair commands."""
-    speed: float
-    direction: float
-
+from couch.libs import command, shark
 
 class WheelchairService:
-    """Service class for wheelchair operations."""
+    """Service class for wheelchair operations. Connects to the wheelchair controller and sends commands to it."""
     
     def __init__(self, serial_port: str) -> None:
         """
@@ -49,7 +41,7 @@ class WheelchairService:
 
 
 class WheelchairServer:
-    """Main server class for the wheelchair API."""
+    """Main server class for the wheelchair API. Exposes a REST API to control the wheelchair."""
     
     def __init__(self, serial_port: str) -> None:
         """
@@ -65,7 +57,7 @@ class WheelchairServer:
         app = FastAPI(title="Wheelchair Controller API")
         
         @app.post("/control")
-        async def control_wheelchair(command: WheelchairCommand) -> dict:
+        async def control_wheelchair(command: command.WheelchairCommand) -> dict:
             """
             Control the wheelchair with speed and direction.
             

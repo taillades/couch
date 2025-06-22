@@ -2,9 +2,10 @@
 
 import typer
 
-from couch.server import wheelchair
+from couch.server import controller, wheelchair
 
 app = typer.Typer()
+
 
 @app.command()
 def run_wheelchair_server(
@@ -35,8 +36,69 @@ def run_wheelchair_server(
     The serial port is read from the SERIAL_PORT environment variable if not provided.
     """
     if not serial_port:
-        raise RuntimeError("SERIAL_PORT environment variable is not set and no serial_port was provided")
-    wheelchair.run_server(serial_port=serial_port, host=host, port=port, reload=reload)
+        raise RuntimeError(
+            "SERIAL_PORT environment variable is not set and no serial_port was provided"
+        )
+    wheelchair.run_server(
+        serial_port=serial_port,
+        host=host,
+        port=port,
+        reload=reload,
+    )
+
+
+@app.command()
+def run_differential_wheelchair_server(
+    host: str = typer.Option(
+        "0.0.0.0",
+        envvar="HOST",
+        help="Host to bind the server to (from HOST env var if not provided)",
+    ),
+    port: int = typer.Option(
+        8000,
+        envvar="PORT",
+        help="Port to bind the server to (from PORT env var if not provided)",
+    ),
+    reload: bool = typer.Option(
+        False,
+        envvar="RELOAD",
+        help="Whether to enable auto-reload on code changes (from RELOAD env var if not provided)",
+    ),
+    left_wheelchair_url: str = typer.Option(
+        None,
+        envvar="LEFT_WHEELCHAIR_URL",
+        help="URL of the left wheelchair (from LEFT_WHEELCHAIR_URL env var if not provided)",
+    ),
+    right_wheelchair_url: str = typer.Option(
+        None,
+        envvar="RIGHT_WHEELCHAIR_URL",
+        help="URL of the right wheelchair (from RIGHT_WHEELCHAIR_URL env var if not provided)",
+    ),
+    distance_between_wheelchairs: float = typer.Option(
+        None,
+        envvar="DISTANCE_BETWEEN_WHEELCHAIRS",
+        help="Distance between left and right wheelchairs (from DISTANCE_BETWEEN_WHEELCHAIRS env var if not provided)",
+    ),
+) -> None:
+    """Run the differential wheelchair server."""
+    if not left_wheelchair_url:
+        raise RuntimeError(
+            "LEFT_WHEELCHAIR_URL environment variable is not set and no left_wheelchair_url was provided"
+        )
+    if not right_wheelchair_url:
+        raise RuntimeError(
+            "RIGHT_WHEELCHAIR_URL environment variable is not set and no right_wheelchair_url was provided"
+        )
+
+    controller.run_server(
+        left_wheelchair_url=left_wheelchair_url,
+        right_wheelchair_url=right_wheelchair_url,
+        distance_between_wheelchairs=distance_between_wheelchairs,
+        host=host,
+        port=port,
+        reload=reload,
+    )
+
 
 if __name__ == "__main__":
     app()

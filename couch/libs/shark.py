@@ -3,23 +3,15 @@
 from typing import Final
 import time
 import threading
-from dataclasses import dataclass
 
 import serial
 
-from couch.libs import normalization
+from couch.libs import normalization, state
 
 MAX_SPEED: Final[int] = 255
 BAUD_RATE: Final[int] = 38400
 START_WAIT_TIME: Final[float] = 0.3
 LOOP_WAIT_TIME: Final[float] = 0.016
-
-
-@dataclass
-class WheelchairState:
-    """Current state of the wheelchair."""
-    speed: float = 0.0
-    direction: float = 0.0
 
 
 def build_runtime_packet(speed: int, direction: int) -> bytes:
@@ -61,7 +53,7 @@ def build_runtime_packet(speed: int, direction: int) -> bytes:
     return bytes(data)
 
 
-def serial_communication_loop(ser: serial.Serial, wheelchair_state: WheelchairState, stop_event: threading.Event) -> None:
+def serial_communication_loop(ser: serial.Serial, wheelchair_state: state.WheelchairState, stop_event: threading.Event) -> None:
     """
     Continuous loop to send serial packets.
     
@@ -91,7 +83,7 @@ class WheelchairController:
         self.serial_connection: serial.Serial | None = None
         self.serial_thread: threading.Thread | None = None
         self.stop_event = threading.Event()
-        self.wheelchair_state = WheelchairState()
+        self.wheelchair_state = state.WheelchairState()
     
     def start(self) -> None:
         """Initialize serial connection and start communication thread."""

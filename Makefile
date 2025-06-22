@@ -1,5 +1,5 @@
-build-docker:
+docker-build:
 	docker build -t couch:latest .
 
-compose-up:
+docker-up:
 	docker-compose up -d 
