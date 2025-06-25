@@ -95,8 +95,16 @@ class WheelchairController:
         self.wheelchair_state = models.WheelchairCommand(timestamp=datetime.datetime.now())
         self.max_idle_time = max_idle_time
     
-    def start(self) -> None:
-        """Initialize serial connection and start communication thread."""
+    def start(self) -> bool:
+        """Attempt to open the serial port and spawn the TX thread.
+
+        Returns ``True`` when the connection is opened, ``False`` otherwise. The
+        method never raises so callers can attempt to connect repeatedly without
+        crashing the application.
+        """
+        if self.serial_connection and self.serial_connection.is_open:
+            return True  # already connected
+
         try:
             self.serial_connection = serial.Serial(
                 port=self.port,
@@ -104,22 +112,26 @@ class WheelchairController:
                 bytesize=serial.EIGHTBITS,
                 parity=serial.PARITY_NONE,
                 stopbits=serial.STOPBITS_TWO,
-                timeout=0.2
+                timeout=0.2,
             )
-            print("Started serial communication")
+            print(f"[{self.port}] Serial connection established")
+
             time.sleep(START_WAIT_TIME)
-            
+
             self.stop_event.clear()
             self.serial_thread = threading.Thread(
                 target=serial_communication_loop,
                 args=(self.serial_connection, self.wheelchair_state, self.stop_event, self.max_idle_time),
-                daemon=True
+                daemon=True,
             )
             self.serial_thread.start()
-            
-        except Exception as e:
-            print(f"Failed to initialize serial connection: {e}")
-            raise
+            return True
+        except Exception as exc:
+            # Connection failed: very likely because the adapter is not plugged
+            # in yet. Log and let the caller try again later.
+            print(f"[{self.port}] Unable to open serial connection: {exc}")
+            self.serial_connection = None
+            return False
     
     def stop(self) -> None:
         """Clean up serial connection."""
@@ -130,14 +142,23 @@ class WheelchairController:
             self.serial_connection.close()
     
     def control(self, speed: float, direction: float) -> None:
+        """Set speed and direction for the wheelchair.
+
+        The method transparently (re)establishes the serial connection when it
+        is not yet available. If the connection cannot be opened (e.g. the USB
+        adapter is still unplugged) the call safely returns without raising and
+        without updating *wheelchair_state*.
+
+        :param speed: Desired speed in the 
+            range ``-1.0`` (full reverse) .. ``1.0`` (full forward)
+        :param direction: Desired steering direction in the
+            range ``-1.0`` (full left) .. ``1.0`` (full right)
         """
-        Control the wheelchair with speed and direction.
-        
-        :param speed: Speed value between -1.0 and 1.0
-        :param direction: Direction value between -1.0 and 1.0
-        """
-        if not self.serial_connection:
-            raise RuntimeError("Serial connection not available")
+        # Lazily (re)connect when the port becomes available.
+        if not self.serial_connection or not self.serial_connection.is_open:
+            if not self.start():
+                # Still not connected – skip this command.
+                return
         
         self.wheelchair_state.speed = speed
         self.wheelchair_state.direction = direction

@@ -52,8 +52,16 @@ class ControllerServer:
 
     @asynccontextmanager
     async def _lifespan(self, _app: FastAPI):  # noqa: D401
-        """Create joystick task and start remote on startup."""
+        """Manage application lifespan.
+
+        On startup, the Xbox remote listener and both wheelchair controllers are
+        started, and the asynchronous control-loop task is created. On
+        shutdown, the control-loop is cancelled **and** the hardware services
+        are stopped to free the serial ports.
+        """
         self.remote.start()
+        self.left_service.start()
+        self.right_service.start()
         self._task = asyncio.create_task(self._control_loop())
         yield
         self._task.cancel()
@@ -62,6 +70,8 @@ class ControllerServer:
         except asyncio.CancelledError:
             pass
         self.remote.stop()
+        self.left_service.stop()
+        self.right_service.stop()
 
     # ----------------------------- internal helpers -----------------------------
 
