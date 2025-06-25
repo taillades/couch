@@ -14,3 +14,58 @@ We bought 2 electric wheelchairs. We remove the top of the wheelchairs to keep o
 Each wheelchair is powered with 2 batteries 12V Lead-Acid mounted in series. We control them in differential drive using a raspberry Pi and the wheelchair control ports. On top of the engine's batteries, we add 2 additional 12V Lead-Acid batteries at the back of the couch. One battery powers up an extensive amount of lights: LEDs at the back, two headlights at the front. The other one powers up the sound system. These batteries are isolated from the outside with a plastic cover.
 
 Exciting, right? Now we can look like it's a Tuesday 8pm and we're watching TV, except that we're at Burning Man and we're watching a beautiful sunset.
+
+
+# Install on your raspberry pi
+
+## OS
+
+1. Download Raspberry Pi Imager
+	•	Get it here: https://www.raspberrypi.com/software/
+	•	Install it on your PC/Mac/Linux
+
+2. Insert your Pi’s SD card into your computer
+
+3. Launch Raspberry Pi Imager
+	•	Click “Choose OS” → Select Raspberry Pi OS (32-bit)
+	•	Click “Choose Storage” → Select your SD card
+
+Optional: Click the gear icon ⚙️ to:
+	•	Set hostname
+	•	Enable SSH
+	•	Set Wi-Fi (if needed)
+	•	Set username/password
+
+4. Click “Write”
+	•	This will erase the card and install a clean OS
+	•	Wait a few minutes for it to finish
+
+5. Put the card back into your Pi and boot
+
+## Activate SSH
+```
+sudo systemctl enable ssh
+sudo systemctl start ssh
+```
+
+## Download the code
+
+```
+mkdir ~/src
+cd ~/src
+git clone git@github.com:taillades/couch.git
+```
+
+## Edit hyperparams (ex: ports)
+
+```
+cd ~/src/couch
+vim docker-compose.yaml
+```
+
+## Run the code
+
+```
+docker-compose up
+```
+
