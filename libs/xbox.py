@@ -15,6 +15,8 @@ class XboxRemote:
         # Joystick state (left stick)
         self.left_x = 0.0  # -1.0 to 1.0
         self.left_y = 0.0  # -1.0 to 1.0
+        self.right_x = 0.0  # -1.0 to 1.0
+        self.right_y = 0.0  # -1.0 to 1.0
         
         # Button states
         self.button_a = False
@@ -26,6 +28,7 @@ class XboxRemote:
         self.button_left = False
         self.button_right = False
         self.button_start = False
+        
         
         # Callbacks
         self._callbacks: Dict[str, Callable] = {}
@@ -66,8 +69,12 @@ class XboxRemote:
                 self.left_x = self._normalize_axis(event.state)
             elif event.code == 'ABS_Y':
                 self.left_y = self._normalize_axis(event.state)
+            elif event.code == 'ABS_RX':
+                self.right_x = self._normalize_axis(event.state)
+            elif event.code == 'ABS_RY':
+                self.right_y = self._normalize_axis(event.state)
         elif event.ev_type == 'Key':
-            if event.code == 'BTN_SOUTH':
+            if event.code == 'BTN_SOUTH':   
                 self.button_a = bool(event.state)
                 self._trigger_callback('button_a', self.button_a)
             elif event.code == 'BTN_EAST':

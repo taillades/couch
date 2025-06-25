@@ -63,6 +63,18 @@ cd ~/src/couch
 vim docker-compose.yaml
 ```
 
+## Add user to docker and input groups
+
+```
+sudo usermod -aG docker,input $USER
+```
+
+Confirm with:
+```
+groups
+```
+
+
 ## Run the code
 
 ```

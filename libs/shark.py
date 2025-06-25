@@ -7,7 +7,7 @@ import threading
 import serial
 import datetime
 
-from couch.libs import normalization, state
+from libs import normalization, models
 
 MAX_SPEED: Final[int] = 255
 BAUD_RATE: Final[int] = 38400
@@ -55,7 +55,7 @@ def build_runtime_packet(speed: int, direction: int) -> bytes:
     return bytes(data)
 
 
-def serial_communication_loop(ser: serial.Serial, wheelchair_state: state.WheelchairState, stop_event: threading.Event, max_idle_time: float) -> None:
+def serial_communication_loop(ser: serial.Serial, wheelchair_state: models.WheelchairCommand, stop_event: threading.Event, max_idle_time: float) -> None:
     """
     Continuous loop to send serial packets.
     
@@ -64,11 +64,11 @@ def serial_communication_loop(ser: serial.Serial, wheelchair_state: state.Wheelc
     :param stop_event: Event to stop the loop
     """
     while not stop_event.is_set():
-        if (datetime.datetime.now() - wheelchair_state.last_command_timestamp).total_seconds() > max_idle_time:
+        if (datetime.datetime.now() - wheelchair_state.timestamp).total_seconds() > max_idle_time:
             print("Max idle time reached, resetting state to idle")
             wheelchair_state.speed = 0.0
             wheelchair_state.direction = 0.0
-            wheelchair_state.last_command_timestamp = datetime.datetime.now()
+            wheelchair_state.timestamp = datetime.datetime.now()
 
         speed_byte = normalization.normalize_range(-1.0, 1.0, 0, 1023, wheelchair_state.speed)
         direction_byte = normalization.normalize_range(-1.0, 1.0, 0, 1023, wheelchair_state.direction)
@@ -92,7 +92,7 @@ class WheelchairController:
         self.serial_connection: serial.Serial | None = None
         self.serial_thread: threading.Thread | None = None
         self.stop_event = threading.Event()
-        self.wheelchair_state = state.WheelchairState(last_command_timestamp=datetime.datetime.now())
+        self.wheelchair_state = models.WheelchairCommand(timestamp=datetime.datetime.now())
         self.max_idle_time = max_idle_time
     
     def start(self) -> None:
@@ -141,7 +141,7 @@ class WheelchairController:
         
         self.wheelchair_state.speed = speed
         self.wheelchair_state.direction = direction
-        self.wheelchair_state.last_command_timestamp = datetime.datetime.now()
+        self.wheelchair_state.timestamp = datetime.datetime.now()
     
     def get_status(self) -> dict:
         """
@@ -152,5 +152,5 @@ class WheelchairController:
         return {
             "speed": self.wheelchair_state.speed,
             "direction": self.wheelchair_state.direction,
-            "last_command_timestamp": self.wheelchair_state.last_command_timestamp.isoformat()
+            "timestamp": self.wheelchair_state.timestamp.isoformat()
         }
