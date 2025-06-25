@@ -7,6 +7,8 @@ import time
 
 import uvicorn
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import FileResponse
+from pathlib import Path
 
 from libs import differential, models, shark, xbox
 
@@ -86,19 +88,9 @@ class ControllerServer:
                 start_time = time.time()
                 speed, direction = self.remote.get_joystick_speed_direction()
                 speed = self._apply_deadzone(speed)
-                direction = self._apply_deadzone(direction)
-
-                left_speed = speed - direction * self.distance_between_wheelchairs / 2
-                right_speed = speed + direction * self.distance_between_wheelchairs / 2
-
-                # Normalise to stay within allowed range
-                max_val = max(abs(left_speed), abs(right_speed), self.max_speed)
-                if max_val > self.max_speed:
-                    left_speed /= max_val
-                    right_speed /= max_val
-
-                self.left_service.control(left_speed, direction)
-                self.right_service.control(right_speed, direction)
+                right_cmd, left_cmd = self.differential_drive.calculate_wheelchair_states(speed, direction)
+                self.left_service.control(left_cmd.speed, left_cmd.direction)
+                self.right_service.control(right_cmd.speed, right_cmd.direction)
                 sleep_time = max(0, 0.02 - (time.time() - start_time))
                 await asyncio.sleep(sleep_time)
             except Exception as exc:
@@ -192,6 +184,13 @@ class ControllerServer:
                 }
             except Exception as exc:
                 raise HTTPException(status_code=500, detail=str(exc)) from exc
+
+        # -------- Dashboard (static HTML) --------
+        @app.get("/dashboard", summary="Live controller dashboard")
+        async def dashboard() -> FileResponse:  # noqa: D401
+            """Return the HTML dashboard for live telemetry."""
+            file_path = Path(__file__).resolve().parent / "monitor.html"
+            return FileResponse(file_path)
 
     # ----------------------------- public API -----------------------------
 

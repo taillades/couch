@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Couch Controller Live Monitor</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            margin: 0;
+            padding: 0 1rem;
+            background: #f5f7fa;
+            color: #222;
+        }
+
+        h1 {
+            text-align: center;
+            margin-top: 1.5rem;
+        }
+
+        .cards {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 1rem;
+        }
+
+        .card {
+            background: #fff;
+            padding: 1.25rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+            width: 320px;
+            max-width: 100%;
+        }
+
+        .card h2 {
+            margin: 0 0 0.75rem 0;
+            font-size: 1.25rem;
+        }
+
+        .row {
+            display: flex;
+            justify-content: space-between;
+            margin: 0.35rem 0;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <h1>Couch Controller – Live Telemetry</h1>
+
+    <div class="cards">
+        <div class="card" id="controller-card">
+            <h2>Controller Input</h2>
+            <div class="row"><span>Speed:</span><span id="input-speed">–</span></div>
+            <div class="row"><span>Direction:</span><span id="input-direction">–</span></div>
+        </div>
+
+        <div class="card" id="left-card">
+            <h2>Left Wheelchair</h2>
+            <div class="row"><span>Speed:</span><span id="left-speed">–</span></div>
+            <div class="row"><span>Direction:</span><span id="left-direction">–</span></div>
+        </div>
+
+        <div class="card" id="right-card">
+            <h2>Right Wheelchair</h2>
+            <div class="row"><span>Speed:</span><span id="right-speed">–</span></div>
+            <div class="row"><span>Direction:</span><span id="right-direction">–</span></div>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * Fetch JSON helper.
+         * @param {string} url URL to fetch.
+         * @returns {Promise<any>} parsed JSON.
+         */
+        async function fetchJson(url) {
+            const res = await fetch(url, { cache: 'no-store' });
+            if (!res.ok) {
+                throw new Error(`Request failed: ${url} – ${res.status}`);
+            }
+            return res.json();
+        }
+
+        /**
+         * Update the DOM with the latest data.
+         */
+        async function update() {
+            try {
+                const joystick = await fetchJson('/joystick');
+                document.getElementById('input-speed').textContent = joystick.speed.toFixed(3);
+                document.getElementById('input-direction').textContent = joystick.direction.toFixed(3);
+
+                const left = await fetchJson('/wheelchair/left/status');
+                document.getElementById('left-speed').textContent = left.speed.toFixed(3);
+                document.getElementById('left-direction').textContent = left.direction.toFixed(3);
+
+                const right = await fetchJson('/wheelchair/right/status');
+                document.getElementById('right-speed').textContent = right.speed.toFixed(3);
+                document.getElementById('right-direction').textContent = right.direction.toFixed(3);
+            } catch (err) {
+                console.error('Update error:', err);
+            }
+        }
+
+        // Poll 10 × per second.
+        setInterval(update, 100);
+        // Initial immediate update.
+        update();
+    </script>
+</body>
+</html> 

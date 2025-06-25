@@ -136,7 +136,7 @@ class XboxRemote:
         Returns:
             tuple: (speed, direction) where speed is x and direction is y
         """
-        return self.left_y, -self.left_x
+        return -self.left_y, self.left_x
         
     def add_button_callback(self, button: str, callback: Callable) -> None:
         """
