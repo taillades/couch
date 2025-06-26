@@ -15,6 +15,9 @@ Each wheelchair is powered with 2 batteries 12V Lead-Acid mounted in series. We 
 
 Exciting, right? Now we can look like it's a Tuesday 8pm and we're watching TV, except that we're at Burning Man and we're watching a beautiful sunset.
 
+# References
+
+PCB: https://dirtypcbs.com/store/details/5125/nano-shark-hat-v3-23-zip
 
 # Install on your raspberry pi
 
