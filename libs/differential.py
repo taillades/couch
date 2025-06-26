@@ -3,6 +3,16 @@
 import datetime
 from libs import models
 
+def _zero_safe_division(a: float, b: float) -> float:
+    if b == 0:
+        return 2**100
+    return a / b
+
+def _sign(a: float) -> float:
+    if a == 0:
+        return 0
+    return 1 if a > 0 else -1
+
 class DifferentialDrive:
     """Differential drive library."""
 
@@ -14,16 +24,25 @@ class DifferentialDrive:
     def calculate_wheelchair_states(self, speed: float, direction: float) -> tuple[models.WheelchairCommand, models.WheelchairCommand]:
         """Calculate the speeds for the left and right wheels."""
         # TODO (taillades): make sure that the speed, direction and distance between wheelchairs are in the same unit system
-        right_wheel_speed = speed + direction * self.distance_between_wheelchairs / 2
-        left_wheel_speed = speed - direction * self.distance_between_wheelchairs / 2
-        normalization_factor = max(abs(right_wheel_speed), abs(left_wheel_speed), self.max_speed) / self.max_speed
-        right_wheel_speed /= normalization_factor
-        left_wheel_speed /= normalization_factor
+        right_speed = speed + direction / 2
+        left_speed = speed - direction / 2
+
+        max_speed = max(abs(right_speed), abs(left_speed))
+        if max_speed > self.max_speed:
+            right_speed = right_speed * self.max_speed / max_speed
+            left_speed = left_speed * self.max_speed / max_speed
+
+        ICR_radius = (self.distance_between_wheelchairs / 2) * _zero_safe_division(right_speed + left_speed, right_speed - left_speed)
         
-        direction_normalization_factor = max(abs(right_wheel_speed), abs(left_wheel_speed), self.max_direction) / self.max_direction
-        direction /= direction_normalization_factor
+        right_direction = right_speed / (ICR_radius + self.distance_between_wheelchairs / 2 * _sign(direction))
+        left_direction = left_speed / (ICR_radius - self.distance_between_wheelchairs / 2 * _sign(direction))
+        
+        max_direction = max(abs(right_direction), abs(left_direction))
+        if max_direction > self.max_direction:
+            right_direction = right_direction * self.max_direction / max_direction
+            left_direction = left_direction * self.max_direction / max_direction
         
         return (
-            models.WheelchairCommand(speed=right_wheel_speed, direction=direction, timestamp=datetime.datetime.now()),
-            models.WheelchairCommand(speed=left_wheel_speed, direction=direction, timestamp=datetime.datetime.now() )
+            models.WheelchairCommand(speed=right_speed, direction=right_direction, timestamp=datetime.datetime.now()),
+            models.WheelchairCommand(speed=left_speed, direction=left_direction, timestamp=datetime.datetime.now() )
         )
