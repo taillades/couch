@@ -18,6 +18,7 @@ Exciting, right? Now we can look like it's a Tuesday 8pm and we're watching TV, 
 # References
 
 - https://www.youtube.com/watch?v=8B36xSlDK-Y
+- https://www.wheelchairdriver.com/board/viewtopic.php?f=2&t=4867&start=570
 
 # Install on your raspberry pi
 
