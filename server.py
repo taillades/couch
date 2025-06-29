@@ -15,7 +15,7 @@ from pathlib import Path
 from math import radians, cos, sin, sqrt, atan2, pi
 
 
-from libs import differential, models, shark, speaker, xbox
+from libs import differential, models, shark, speaker, thermo, xbox
 
 STATIC_PATH = os.path.join(os.path.dirname(__file__), "static")
 
@@ -27,6 +27,7 @@ class ControllerServer:
         *,
         left_serial_port: str,
         right_serial_port: str,
+        thermo_serial_port: str,
         deadzone: float,
         play_intro: bool,
     ) -> None:
@@ -34,11 +35,13 @@ class ControllerServer:
 
         :param left_serial_port: Serial port for the left wheelchair controller
         :param right_serial_port: Serial port for the right wheelchair controller
+        :param thermo_serial_port: Serial port for the temperature sensor
         :param deadzone: Ignore absolute joystick values below this threshold
         :param play_intro: Play the intro music
         """
         self.left_service = shark.WheelchairController(port=left_serial_port)
         self.right_service = shark.WheelchairController(port=right_serial_port)
+        self.thermo_service = thermo.ThermoSerial(port=thermo_serial_port)
         self.differential_drive = differential.DifferentialDrive()
         self.play_intro = play_intro
         
@@ -67,6 +70,7 @@ class ControllerServer:
         self.remote.start()
         self.left_service.start()
         self.right_service.start()
+        self.thermo_service.start()
         self._task = asyncio.create_task(self._control_loop())
         if self.play_intro:
             try:
@@ -83,6 +87,7 @@ class ControllerServer:
         self.remote.stop()
         self.left_service.stop()
         self.right_service.stop()
+        self.thermo_service.stop()
 
     # ----------------------------- internal helpers -----------------------------
 
@@ -128,7 +133,6 @@ class ControllerServer:
             direction -= 2 * pi
         while direction < -pi:
             direction += 2 * pi
-
         return 1.0, min(max(direction, -1.0), 1.0)
     
     def _get_speed_direction(self) -> tuple[float, float]:
@@ -140,6 +144,20 @@ class ControllerServer:
             return speed, direction
         else:
             return self.compute_autonomous_command()
+        
+    # TODO(taillades): this isn't used in production, remove it
+    def _simulate_movement(self, speed: float, direction: float) -> None:
+        """Simulate the movement of the wheelchair."""
+        # the real command will be capped
+        direction = min(max(direction, -0.2), 0.2)
+        mph_to_degree_for_20ms = 69 * 50 * 3600
+        speed /= mph_to_degree_for_20ms
+        # hack to be faster
+        speed *= 100
+        self.geoposition.lat += (speed * cos(self.theta))
+        self.geoposition.lon += (speed * sin(self.theta))
+        self.theta += direction / (1 + speed)
+        self.theta = min(max(self.theta, -math.pi / 2), math.pi / 2)
 
     async def _control_loop(self) -> None:  # noqa: D401
         """Continuously read joystick and command wheelchairs."""
@@ -147,6 +165,7 @@ class ControllerServer:
             try:
                 start_time = time.time()
                 speed, direction = self._get_speed_direction()
+                self._simulate_movement(speed, direction)
                 right_cmd, left_cmd = self.differential_drive.calculate_wheelchair_states(speed, direction)
                 self.left_service.control(left_cmd.speed, left_cmd.direction)
                 self.right_service.control(right_cmd.speed, right_cmd.direction)
@@ -305,7 +324,10 @@ class ControllerServer:
                 'left': self.left_service.get_spm_general_information()['ground_speed'],
                 'right': self.right_service.get_spm_general_information()['ground_speed'],
             }
-
+        
+        @app.get("/temperature")
+        async def temperature() -> dict[str, float] | None:  # noqa: D401
+            return self.thermo_service.read_temperatures()
     # ----------------------------- public API -----------------------------
 
     def run(self, *, host: str = "0.0.0.0", port: int = 8000, reload: bool = False) -> None:
@@ -321,6 +343,7 @@ def run_server(
     port: int = 8000,
     left_serial_port: str,
     right_serial_port: str,
+    thermo_serial_port: str,
     deadzone: float,
     play_intro: bool,
     reload: bool = False,
@@ -329,6 +352,7 @@ def run_server(
     server = ControllerServer(
         left_serial_port=left_serial_port,
         right_serial_port=right_serial_port,
+        thermo_serial_port=thermo_serial_port,
         deadzone=deadzone,
         play_intro=play_intro,
     )

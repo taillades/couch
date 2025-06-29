@@ -17,7 +17,14 @@ class ThermoSerial:
         :param baudrate: Baud rate for serial communication
         :param timeout: Read timeout in seconds
         """
-        self.ser = serial.Serial(port, baudrate=baudrate, timeout=timeout)
+        self.port = port
+        self.baudrate = baudrate
+        self.timeout = timeout
+        self.ser = None
+    
+    def start(self) -> None:
+        self.ser = serial.Serial(self.port, baudrate=self.baudrate, timeout=self.timeout)
+        print(f"Connected to {self.port}")
 
     def read_temperatures(self) -> dict[str, float] | None:
         """
@@ -26,6 +33,8 @@ class ThermoSerial:
         :returns: Tuple of (left, right, air, box, battery) temperatures in Celsius,
                   or None if parsing fails or timeout occurs.
         """
+        if self.ser is None:
+            return None
         try:
             line = self.ser.readline().decode("utf-8").strip()
             if not line:
@@ -44,9 +53,10 @@ class ThermoSerial:
         except Exception:
             return None
 
-    def close(self) -> None:
+    def stop(self) -> None:
         """
         Close the serial connection.
         """
-        self.ser.close()
+        if self.ser is not None:
+            self.ser.close()
 

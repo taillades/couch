@@ -32,6 +32,11 @@ def run(
         envvar="RIGHT_SERIAL_PORT",
         help="Serial port for the right wheelchair (from RIGHT_SERIAL_PORT env var if not provided)",
     ),
+    thermo_serial_port: str = typer.Option(
+        None,
+        envvar="THERMO_SERIAL_PORT",
+        help="Serial port for the temperature sensor (from THERMO_SERIAL_PORT env var if not provided)",
+    ),
     deadzone: float = typer.Option(
         '0.1',
         envvar="DEADZONE",
@@ -60,6 +65,7 @@ def run(
         port=port,
         left_serial_port=left_serial_port,
         right_serial_port=right_serial_port,
+        thermo_serial_port=thermo_serial_port,
         deadzone=deadzone,
         play_intro=play_intro,
         reload=reload,
