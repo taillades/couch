@@ -5,6 +5,7 @@ from typing import Optional, Callable, Dict, Any
 
 import inputs
 
+from libs.speaker import play_music
 
 class XboxRemote:
     """Xbox remote input handler for reading joystick and button states."""
@@ -13,6 +14,8 @@ class XboxRemote:
         """Initialize the Xbox remote handler."""
         self._running = False
         self._thread: Optional[threading.Thread] = None
+        
+        self.cruise_mode = False
         
         # Joystick state (left stick)
         self.left_x = 0.0  # -1.0 to 1.0
@@ -32,11 +35,18 @@ class XboxRemote:
         self.button_start = False
         
         
-        # Callbacks
-        self._callbacks: Dict[str, Callable] = {}
-        
+        self._callbacks: Dict[str, Callable[[Any], None]] = {
+            'button_down': lambda _: play_music('fuck_your_burn'),
+            'button_a': lambda _: self._cruise_mode_callback(True),
+            'button_b': lambda _: self._cruise_mode_callback(False),
+            
+        }
         # Deadzone for joystick (to prevent drift)
         self.deadzone = 0.1
+        
+    def _cruise_mode_callback(self, value: bool) -> None:
+        """Callback for cruise mode button."""
+        self.cruise_mode = value
         
     def start(self) -> None:
         """Start listening for remote input in a separate thread."""
@@ -104,18 +114,24 @@ class XboxRemote:
             elif event.code == 'BTN_START':
                 self.button_start = bool(event.state)
                 self._trigger_callback('button_start', self.button_start)
-            elif event.code == 'BTN_MODE':
-                self.button_up = bool(event.state)
-                self._trigger_callback('button_up', self.button_up)
-            elif event.code == 'BTN_SELECT':
-                self.button_down = bool(event.state)
-                self._trigger_callback('button_down', self.button_down)
-            elif event.code == 'BTN_SELECT':
-                self.button_left = bool(event.state)
-                self._trigger_callback('button_left', self.button_left)
-            elif event.code == 'BTN_SELECT':
-                self.button_right = bool(event.state)
-                self._trigger_callback('button_right', self.button_right)
+            elif event.code == 'ABS_HAT0Y':
+                # It's a bit weird, but the hat is -1 when up and 1 when down
+                if event.state == 0:
+                    self.button_up = False
+                    self.button_down = False
+                elif event.state == -1:
+                    self.button_up = True
+                    self._trigger_callback('button_up', self.button_up)
+                elif event.state == 0:
+                    self.button_down = True
+                    self._trigger_callback('button_down', self.button_down)
+            elif event.code == 'ABS_HAT0X':
+                if event.state == 1:
+                    self.button_right = True
+                    self._trigger_callback('button_right', self.button_right)
+                elif event.state == -1:
+                    self.button_left = True
+                    self._trigger_callback('button_left', self.button_left)
                 
     def _normalize_axis(self, value: int) -> float:
         """Normalize axis value from raw input to -1.0 to 1.0 range."""
@@ -125,8 +141,14 @@ class XboxRemote:
         return max(-1.0, min(1.0, normalized))
         
     def _trigger_callback(self, event_type: str, value: Any) -> None:
-        """Trigger callback for button events."""
-        if event_type in self._callbacks:
+        """Trigger the registered callback **only** when the button is actively pressed.
+
+        Release events (``value`` evaluates to :pydata:`False`) are ignored so that
+        callbacks correspond to the *action* of pressing the button rather than
+        its current pressed state.
+        """
+        # Execute callback *only* on the press (value == True)
+        if value and event_type in self._callbacks:
             try:
                 self._callbacks[event_type](value)
             except Exception as e:
@@ -148,7 +170,9 @@ class XboxRemote:
         Returns:
             tuple: (speed, direction) where speed is x and direction is y
         """
-        return -self.left_y, -self.left_x
+        speed = -self.left_y if not self.cruise_mode else 1.0
+        direction = -self.left_x
+        return speed, direction
         
     def add_button_callback(self, button: str, callback: Callable) -> None:
         """
@@ -195,6 +219,7 @@ class XboxRemote:
         a fresh device scan so that, once the pad is re-plugged, input events
         start flowing again without restarting the whole application.
         """
+        self.cruise_mode = False
         try:
             # Reload the module to drop stale file descriptors and rescan
             globals()["inputs"] = importlib.reload(inputs)
