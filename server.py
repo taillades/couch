@@ -185,7 +185,7 @@ class ControllerServer:
         @app.get("/dashboard", summary="Live controller dashboard")
         async def dashboard() -> FileResponse:  # noqa: D401
             """Return the HTML dashboard for live telemetry."""
-            file_path = Path(__file__).resolve().parent / "monitor.html"
+            file_path = Path(__file__).resolve().parent / "static/monitor.html"
             return FileResponse(file_path)
 
     # ----------------------------- public API -----------------------------
