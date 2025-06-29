@@ -40,6 +40,11 @@ class ControllerServer:
         self.differential_drive = differential.DifferentialDrive()
         self.play_intro = play_intro
         
+        self.target_geopoint: models.Geopoint | None = None
+        self.geoposition: models.Geopoint | None = None
+        # TODO(taillades): remove this once we have a GPS
+        self.geoposition = models.Geopoint(lat=40.7865, lon=-119.2065)
+        self.theta = 45 / 180 * math.pi
         self.remote = xbox.XboxRemote()
         self.deadzone = deadzone
         
@@ -202,20 +207,22 @@ class ControllerServer:
 
         # -------- Position --------
         @app.get("/position")
-        async def position() -> Dict[str, Any]:  # noqa: D401
-            # TODO(taillades): get position from Kalman filter
-            return {
-                "lat": 40.7865,
-                "lon": -119.2065,
-            }
+        async def position() -> models.Geopoint | None:  # noqa: D401
+            return self.geoposition
         
         @app.get("/theta")
-        async def theta() -> Dict[str, Any]:  # noqa: D401
+        async def theta() -> float:  # noqa: D401
             """The angle betwen the north-south axis and the wheelchair's direction in radians."""
-            # TODO(taillades): get angle from Kalman filter
-            return {
-                "angle": 45 / 180 * math.pi,
-            }
+            return self.theta
+        
+        @app.post("/target_position")
+        async def target_position(target: models.Geopoint) -> Dict[str, Any]:  # noqa: D401
+            self.target_geopoint = target
+            return {"message": "Target position received"}
+        
+        @app.get("/target_position")
+        async def target_position() -> models.Geopoint | None:  # noqa: D401
+            return self.target_geopoint
         
         # -------- Dashboard (static HTML) --------
         @app.get("/dashboard", summary="Live controller dashboard")

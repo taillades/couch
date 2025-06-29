@@ -74,7 +74,27 @@
       rotationAngle: 0,
       rotationOrigin: 'center center'
     }).addTo(map);
-    // ------------------------------------------------------------------
+
+    // variables for single target and line
+    let targetMarker = null;
+    let routeLine    = null;
+    let targetLatLng = null;
+
+    function updateRouteLine () {
+      if (!targetLatLng) {
+        if (routeLine) {
+          map.removeLayer(routeLine);
+          routeLine = null;
+        }
+        return;
+      }
+      const couchPos = couchMarker.getLatLng();
+      if (!routeLine) {
+        routeLine = L.polyline([couchPos, targetLatLng], { color: 'red' }).addTo(map);
+      } else {
+        routeLine.setLatLngs([couchPos, targetLatLng]);
+      }
+    }
 
     // --- live couch updates ------------------------------------------
     async function updateCouchPosition () {
@@ -86,10 +106,11 @@
         // Fetch heading (angle in radians) from server and convert to degrees
         const thetaRes = await fetch('/theta');
         if (!thetaRes.ok) return;
-        const { angle } = await thetaRes.json(); // angle is in radians
+        const angle = await thetaRes.json(); // angle is in radians
 
         couchMarker.setLatLng([lat, lon]);
         couchMarker.setRotationAngle(180 + angle * 180 / Math.PI);
+        updateRouteLine();
       } catch (err) {
         console.error('Failed to update couch position', err);
       }
@@ -99,15 +120,29 @@
     setInterval(updateCouchPosition, 2000);   // every 2 s
     // ------------------------------------------------------------------
 
+    // Add a custom icon for the target marker
+    const targetIcon = L.icon({
+      iconUrl: '/icons/target.png',
+      iconSize: [32, 32],
+      iconAnchor: [16, 16],
+      popupAnchor: [0, -16]
+    });
     // Optional: map click to send lat/lon to server
     map.on('click', function(e) {
       const { lat, lng } = e.latlng;
-      L.marker([lat, lng]).addTo(map);
-      fetch('/goto', {
+      targetLatLng = L.latLng(lat, lng);
+
+      // replace previous target marker
+      if (targetMarker) map.removeLayer(targetMarker);
+      targetMarker = L.marker(targetLatLng, { icon: targetIcon }).addTo(map);
+
+      updateRouteLine();
+
+      fetch('/target_position', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ latitude: lat, longitude: lng })
-      }).then(r => console.log(`Sent rover command: ${lat}, ${lng}`));
+        body: JSON.stringify({ lat: lat, lon: lng })
+      }).then(r => console.log(`Updated target position: ${lat}, ${lng}`));
     });
   </script>
 </body>
