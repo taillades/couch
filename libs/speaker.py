@@ -1,9 +1,10 @@
 import pygame
 import time
+import os
 
 import yaml
 
-with open("/home/pi/src/couch/libs/sounds.yaml", "r") as f:
+with open(os.path.join(os.path.dirname(__file__), "sounds.yaml"), "r") as f:
     SOUNDS = yaml.safe_load(f)
 
 def play_music(music_file: str):

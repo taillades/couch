@@ -5,6 +5,7 @@ from contextlib import asynccontextmanager
 from typing import Any, Dict
 import time
 
+from fastapi.staticfiles import StaticFiles
 import uvicorn
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
@@ -12,6 +13,7 @@ from pathlib import Path
 
 from libs import differential, models, shark, speaker, xbox
 
+TILE_PATH = "/Users/taillades/src/couch/static/tiles"
 
 class ControllerServer:
     """Unified server that embeds joystick reading, differential control and direct wheelchair commands."""
@@ -105,13 +107,15 @@ class ControllerServer:
     def _setup_routes(self) -> None:
         app = self.app
 
+        app.mount("/tiles", StaticFiles(directory=TILE_PATH), name="tiles")
+        
+        #TODO(taillades): update this to the 2025 geojson
+        app.mount("/burning_man_2023_geojson", StaticFiles(directory="/Users/taillades/src/couch/static/burning_man_2023_geojson"), name="geojson")
+
         # -------- health & root --------
         @app.get("/")
         async def root() -> Dict[str, Any]:  # noqa: D401
-            return {
-                "message": "Couch Unified Server", 
-                "deadzone": self.deadzone,
-            }
+            return FileResponse("static/map.html")
 
         @app.get("/health")
         async def health() -> Dict[str, str]:  # noqa: D401

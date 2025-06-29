@@ -1,0 +1,929 @@
+{
+  "type" : "FeatureCollection",
+  "features" : [
+    {
+      "type" : "Feature",
+      "id" : 0,
+      "geometry" : {
+        "type" : "Point",
+        "coordinates" : [
+          -119.20031508072915,
+          40.788818334227649
+        ]
+      },
+      "properties" : {
+        "FID" : 0,
+        "NAME" : "1200 Promenade",
+        "TYPE" : "CPN",
+        "ALIAS1" : "12PROM",
+        "X" : -119.200315081,
+        "Y" : 40.788818334200002,
+        "Source" : "KB GIS",
+        "Category" : "Civic Area"
+      }
+    },
+    {
+      "type" : "Feature",
+      "id" : 1,
+      "geometry" : {
+        "type" : "Point",
+        "coordinates" : [
+          -119.19523827373492,
+          40.780131009710473
+        ]
+      },
+      "properties" : {
+        "FID" : 1,
+        "NAME" : "3 & B Plaza",
+        "TYPE" : "CPN",
+        "ALIAS1" : "3BP",
+        "X" : -119.195238274,
+        "Y" : 40.7801310097,
+        "Source" : "KB GIS",
+        "Category" : "Civic Area"
+      }
+    },
+    {
+      "type" : "Feature",
+      "id" : 2,
+      "geometry" : {
+        "type" : "Point",
+        "coordinates" : [
+          -119.19710603452943,
+          40.781545421645625
+        ]
+      },
+      "properties" : {
+        "FID" : 2,
+        "NAME" : "300 Portal",
+        "TYPE" : "CPN",
+        "ALIAS1" : "3POR",
+        "X" : -119.197106035,
+        "Y" : 40.781545421600001,
+        "Source" : "KB GIS",
+        "Category" : "Civic Area"
+      }
+    },
+    {
+      "type" : "Feature",
+      "id" : 3,
+      "geometry" : {
+        "type" : "Point",
+        "coordinates" : [
+          -119.20032889567568,
+          40.783985805333877
+        ]
+      },
+      "properties" : {
+        "FID" : 3,
+        "NAME" : "300 Promenade",
+        "TYPE" : "CPN",
+        "ALIAS1" : "3PROM",
+        "X" : -119.200328896,
+        "Y" : 40.783985805299999,
+        "Source" : "KB GIS",
+        "Category" : "Civic Area"
+      }
+    },
+    {
+      "type" : "Feature",
+      "id" : 4,
+      "geometry" : {
+        "type" : "Point",
+        "coordinates" : [
+          -119.20346683598206,
+          40.772993689829704
+        ]
+      },
+      "properties" : {
+        "FID" : 4,
+        "NAME" : "430 & G Plaza",
+        "TYPE" : "CPN",
+        "ALIAS1" : "430GP",
+        "X" : -119.203466836,
+        "Y" : 40.772993689800003,
+        "Source" : "KB GIS",
+        "Category" : "Civic Area"
+      }
+    },
+    {
+      "type" : "Feature",
+      "id" : 5,
+      "geometry" : {
+        "type" : "Point",
+        "coordinates" : [
+          -119.20348375658665,
+          40.779525656335331
+        ]
+      },
+      "properties" : {
+        "FID" : 5,
+        "NAME" : "430 Portal",
+        "TYPE" : "CPN",
+        "ALIAS1" : "430POR",
+        "X" : -119.203483757,
+        "Y" : 40.779525656300002,
+        "Source" : "KB GPS L1 Rinex Post Processed",
+        "Category" : "Civic Area"
+      }
+    },
+    {
+      "type" : "Feature",
+      "id" : 6,
+      "geometry" : {
+        "type" : "Point",
+        "coordinates" : [
+          -119.20921818312013,
+          40.782025237996365
+        ]
+      },
+      "properties" : {
+        "FID" : 6,
+        "NAME" : "600 Portal",
+        "TYPE" : "CPN",
+        "ALIAS1" : "6POR",
+        "X" : -119.209218183,
+        "Y" : 40.782025238000003,
+        "Source" : "KB GIS",
+        "Category" : "Civic Area"
+      }
+    },
+    {
+      "type" : "Feature",
+      "id" : 7,
+      "geometry" : {
+        "type" : "Point",
+        "coordinates" : [
+          -119.20635980423451,
+          40.784206244527468
+        ]
+      },
+      "properties" : {
+        "FID" : 7,
+        "NAME" : "600 Promenade",
+        "TYPE" : "CPN",
+        "ALIAS1" : "6PROM",
+        "X" : -119.206359804,
+        "Y" : 40.784206244499998,
+        "Source" : "KB GIS",
+        "Category" : "Civic Area"
+      }
+    },
+    {
+      "type" : "Feature",
+      "id" : 8,
+      "geometry" : {
+        "type" : "Point",
+        "coordinates" : [
+          -119.22112400837801,
+          40.786360157322306
+        ]
+      },
+      "properties" : {
+        "FID" : 8,
+        "NAME" : "730 & G Plaza",
+        "TYPE" : "CPN",
+        "ALIAS1" : "730GP",
+        "X" : -119.221124008,
+        "Y" : 40.786360157300003,
+        "Source" : "KB GIS",
+        "Category" : "Civic Area"
+      }
+    },
+    {
+      "type" : "Feature",
+      "id" : 9,
+      "geometry" : {
+        "type" : "Point",
+        "coordinates" : [
+          -119.21252872359223,
+          40.786374026377139
+        ]
+      },
+      "properties" : {
+        "FID" : 9,
+        "NAME" : "730 Portal",
+        "TYPE" : "CPN",
+        "ALIAS1" : "730PORT",
+        "X" : -119.21252872399999,
+        "Y" : 40.786374026399997,
+        "Source" : "KB GIS",
+        "Category" : "Civic Area"
+      }
+    },
+    {
+      "type" : "Feature",
+      "id" : 10,
+      "geometry" : {
+        "type" : "Point",
+        "coordinates" : [
+          -119.21176594956042,
+          40.792643870141504
+        ]
+      },
+      "properties" : {
+        "FID" : 10,
+        "NAME" : "9 & B Plaza",
+        "TYPE" : "CPN",
+        "ALIAS1" : "9BP",
+        "X" : -119.21176595,
+        "Y" : 40.792643870100001,
+        "Source" : "KB GIS",
+        "Category" : "Civic Area"
+      }
+    },
+    {
+      "type" : "Feature",
+      "id" : 11,
+      "geometry" : {
+        "type" : "Point",
+        "coordinates" : [
+          -119.20989798412729,
+          40.791230018668521
+        ]
+      },
+      "properties" : {
+        "FID" : 11,
+        "NAME" : "900 Portal",
+        "TYPE" : "CPN",
+        "ALIAS1" : "9POR",
+        "X" : -119.20989798399999,
+        "Y" : 40.791230018699999,
+        "Source" : "KB GPS L1 Rinex Post Processed",
+        "Category" : "Civic Area"
+      }
+    },
+    {
+      "type" : "Feature",
+      "id" : 12,
+      "geometry" : {
+        "type" : "Point",
+        "coordinates" : [
+          -119.2066993338539,
+          40.788808768404337
+        ]
+      },
+      "properties" : {
+        "FID" : 12,
+        "NAME" : "900 Promenade",
+        "TYPE" : "CPN",
+        "ALIAS1" : "9PROM",
+        "X" : -119.20669933400001,
+        "Y" : 40.788808768400003,
+        "Source" : "KB GIS",
+        "Category" : "Civic Area"
+      }
+    },
+    {
+      "type" : "Feature",
+      "id" : 13,
+      "geometry" : {
+        "type" : "Point",
+        "coordinates" : [
+          -119.21109242822159,
+          40.781499469157673
+        ]
+      },
+      "properties" : {
+        "FID" : 13,
+        "NAME" : "Media Mecca",
+        "TYPE" : "CPN",
+        "ALIAS1" : "MEDIA",
+        "X" : -119.211092428,
+        "Y" : 40.7814994692,
+        "Source" : "KB GIS",
+        "Category" : "Operations Feature"
+      }
+    },
+    {
+      "type" : "Feature",
+      "id" : 14,
+      "geometry" : {
+        "type" : "Point",
+        "coordinates" : [
+          -119.20724220544467,
+          40.779484683412534
+        ]
+      },
+      "properties" : {
+        "FID" : 14,
+        "NAME" : "Rampart",
+        "TYPE" : "CPN",
+        "ALIAS1" : "RMP",
+        "X" : -119.207242205,
+        "Y" : 40.7794846834,
+        "Source" : "KB GIS",
+        "Category" : "Service Feature"
+      }
+    },
+    {
+      "type" : "Feature",
+      "id" : 15,
+      "geometry" : {
+        "type" : "Point",
+        "coordinates" : [
+          -119.194504923317,
+          40.779293073660192
+        ]
+      },
+      "properties" : {
+        "FID" : 15,
+        "NAME" : "Station 3",
+        "TYPE" : "CPN",
+        "ALIAS1" : "ST3",
+        "X" : -119.194504923,
+        "Y" : 40.779293073700003,
+        "Source" : "KB GIS",
+        "Category" : "Service Feature"
+      }
+    },
+    {
+      "type" : "Feature",
+      "id" : 16,
+      "geometry" : {
+        "type" : "Point",
+        "coordinates" : [
+          -119.21248514219694,
+          40.793501443837307
+        ]
+      },
+      "properties" : {
+        "FID" : 16,
+        "NAME" : "Station 9",
+        "TYPE" : "CPN",
+        "ALIAS1" : "ST9",
+        "X" : -119.21248514200001,
+        "Y" : 40.793501443799997,
+        "Source" : "KB GIS",
+        "Category" : "Service Feature"
+      }
+    },
+    {
+      "type" : "Feature",
+      "id" : 17,
+      "geometry" : {
+        "type" : "Point",
+        "coordinates" : [
+          -119.20982573537998,
+          40.780835743373949
+        ]
+      },
+      "properties" : {
+        "FID" : 17,
+        "NAME" : "Playa Info",
+        "TYPE" : "CPN",
+        "ALIAS1" : "PI",
+        "X" : -119.209825735,
+        "Y" : 40.780835743399997,
+        "Source" : "KB GIS",
+        "Category" : "Service Feature"
+      }
+    },
+    {
+      "type" : "Feature",
+      "id" : 18,
+      "geometry" : {
+        "type" : "Point",
+        "coordinates" : [
+          -119.22098793973019,
+          40.773028051038196
+        ]
+      },
+      "properties" : {
+        "FID" : 18,
+        "NAME" : "Greeters",
+        "TYPE" : "CPN",
+        "ALIAS1" : "GREET",
+        "X" : -119.22098794,
+        "Y" : 40.773028050999997,
+        "Source" : "Google Sheet",
+        "Category" : "Civic Landmark"
+      }
+    },
+    {
+      "type" : "Feature",
+      "id" : 19,
+      "geometry" : {
+        "type" : "Point",
+        "coordinates" : [
+          -119.21752000000768,
+          40.806934999992322
+        ]
+      },
+      "properties" : {
+        "FID" : 19,
+        "NAME" : "Point 2",
+        "TYPE" : "CPN",
+        "ALIAS1" : "PT2",
+        "X" : -119.21751999999999,
+        "Y" : 40.806935000000003,
+        "Source" : "KB GPS",
+        "Category" : "Event Perimeter"
+      }
+    },
+    {
+      "type" : "Feature",
+      "id" : 20,
+      "geometry" : {
+        "type" : "Point",
+        "coordinates" : [
+          -119.18211500000001,
+          40.802880000000002
+        ]
+      },
+      "properties" : {
+        "FID" : 20,
+        "NAME" : "Point 3",
+        "TYPE" : "CPN",
+        "ALIAS1" : "TP3",
+        "X" : -119.182115,
+        "Y" : 40.802880000000002,
+        "Source" : "KB GPS",
+        "Category" : "Event Perimeter"
+      }
+    },
+    {
+      "type" : "Feature",
+      "id" : 21,
+      "geometry" : {
+        "type" : "Point",
+        "coordinates" : [
+          -119.17628000000001,
+          40.776026000006581
+        ]
+      },
+      "properties" : {
+        "FID" : 21,
+        "NAME" : "Point 4",
+        "TYPE" : "CPN",
+        "ALIAS1" : "PT4",
+        "X" : -119.17628000000001,
+        "Y" : 40.776026000000002,
+        "Source" : "KB GPS",
+        "Category" : "Event Perimeter"
+      }
+    },
+    {
+      "type" : "Feature",
+      "id" : 22,
+      "geometry" : {
+        "type" : "Point",
+        "coordinates" : [
+          -119.20804999995148,
+          40.763504999979652
+        ]
+      },
+      "properties" : {
+        "FID" : 22,
+        "NAME" : "Point 5",
+        "TYPE" : "CPN",
+        "ALIAS1" : "PT5",
+        "X" : -119.20805,
+        "Y" : 40.763505000000002,
+        "Source" : "KB GPS",
+        "Category" : "Event Perimeter"
+      }
+    },
+    {
+      "type" : "Feature",
+      "id" : 23,
+      "geometry" : {
+        "type" : "Point",
+        "coordinates" : [
+          -119.19101793200367,
+          40.776934707098789
+        ]
+      },
+      "properties" : {
+        "FID" : 23,
+        "NAME" : "3 & G Plaza",
+        "TYPE" : "CPN",
+        "ALIAS1" : "3GP",
+        "X" : -119.19101793199999,
+        "Y" : 40.776934707099997,
+        "Source" : "KB GIS",
+        "Category" : "Civic Area"
+      }
+    },
+    {
+      "type" : "Feature",
+      "id" : 24,
+      "geometry" : {
+        "type" : "Point",
+        "coordinates" : [
+          -119.21598911904059,
+          40.795840024963383
+        ]
+      },
+      "properties" : {
+        "FID" : 24,
+        "NAME" : "9 & G Plaza",
+        "TYPE" : "CPN",
+        "ALIAS1" : "9GP",
+        "X" : -119.215989119,
+        "Y" : 40.795840024999997,
+        "Source" : "KB GIS",
+        "Category" : "Civic Area"
+      }
+    },
+    {
+      "type" : "Feature",
+      "id" : 25,
+      "geometry" : {
+        "type" : "Point",
+        "coordinates" : [
+          -119.21593603809804,
+          40.776897403162963
+        ]
+      },
+      "properties" : {
+        "FID" : 25,
+        "NAME" : "6 & G Plaza",
+        "TYPE" : "CPN",
+        "ALIAS1" : "6GP",
+        "X" : -119.215936038,
+        "Y" : 40.776897403200003,
+        "Source" : "KB GIS",
+        "Category" : "Civic Area"
+      }
+    },
+    {
+      "type" : "Feature",
+      "id" : 26,
+      "geometry" : {
+        "type" : "Point",
+        "coordinates" : [
+          -119.20700154000754,
+          40.779928821422956
+        ]
+      },
+      "properties" : {
+        "FID" : 26,
+        "NAME" : "Station 6",
+        "TYPE" : "CPN",
+        "ALIAS1" : "ST6",
+        "X" : -119.20700153999999,
+        "Y" : 40.779928821399999,
+        "Source" : "KB GIS",
+        "Category" : "Service Feature"
+      }
+    },
+    {
+      "type" : "Feature",
+      "id" : 27,
+      "geometry" : {
+        "type" : "Point",
+        "coordinates" : [
+          -119.21121456711064,
+          40.780501492435846
+        ]
+      },
+      "properties" : {
+        "FID" : 27,
+        "NAME" : "Center Camp",
+        "TYPE" : "CPN",
+        "ALIAS1" : "CC",
+        "X" : -119.211214567,
+        "Y" : 40.780501492399999,
+        "Source" : "KB GIS",
+        "Category" : "Civic Area"
+      }
+    },
+    {
+      "type" : "Feature",
+      "id" : 28,
+      "geometry" : {
+        "type" : "Point",
+        "coordinates" : [
+          -119.20350154499999,
+          40.786387902999998
+        ]
+      },
+      "properties" : {
+        "FID" : 28,
+        "NAME" : "The Man",
+        "TYPE" : "CPN",
+        "ALIAS1" : "MAN",
+        "X" : -119.20350154499999,
+        "Y" : 40.786387902999998,
+        "Source" : "KB GPS L1 Rinex Post Processed",
+        "Category" : "Civic Landmark"
+      }
+    },
+    {
+      "type" : "Feature",
+      "id" : 29,
+      "geometry" : {
+        "type" : "Point",
+        "coordinates" : [
+          -119.19712901314469,
+          40.79124915437103
+        ]
+      },
+      "properties" : {
+        "FID" : 29,
+        "NAME" : "The Temple",
+        "TYPE" : "CPN",
+        "ALIAS1" : "TMP",
+        "X" : -119.19712901299999,
+        "Y" : 40.791249154399999,
+        "Source" : "KB GIS",
+        "Category" : "Civic Landmark"
+      }
+    },
+    {
+      "type" : "Feature",
+      "id" : 30,
+      "geometry" : {
+        "type" : "Point",
+        "coordinates" : [
+          -119.19413320652941,
+          40.779576692640475
+        ]
+      },
+      "properties" : {
+        "FID" : 30,
+        "NAME" : "Ranger Station Berlin",
+        "TYPE" : "CPN",
+        "ALIAS1" : "RSB",
+        "X" : -119.19413320699999,
+        "Y" : 40.779576692600003,
+        "Source" : "KB GIS",
+        "Category" : "Service Feature"
+      }
+    },
+    {
+      "type" : "Feature",
+      "id" : 31,
+      "geometry" : {
+        "type" : "Point",
+        "coordinates" : [
+          -119.21282721329527,
+          40.793213489380072
+        ]
+      },
+      "properties" : {
+        "FID" : 31,
+        "NAME" : "Ranger Station Tokyo",
+        "TYPE" : "CPN",
+        "ALIAS1" : "RST",
+        "X" : -119.212827213,
+        "Y" : 40.793213489400003,
+        "Source" : "KB GIS",
+        "Category" : "Service Feature"
+      }
+    },
+    {
+      "type" : "Feature",
+      "id" : 32,
+      "geometry" : {
+        "type" : "Point",
+        "coordinates" : [
+          -119.20903751782193,
+          40.781110889035268
+        ]
+      },
+      "properties" : {
+        "FID" : 32,
+        "NAME" : "Ranger HQ",
+        "TYPE" : "CPN",
+        "ALIAS1" : "RHQ",
+        "X" : -119.209037518,
+        "Y" : 40.781110888999997,
+        "Source" : "KB GIS",
+        "Category" : "Service Feature"
+      }
+    },
+    {
+      "type" : "Feature",
+      "id" : 33,
+      "geometry" : {
+        "type" : "Point",
+        "coordinates" : [
+          -119.20918624435284,
+          40.803055884750812
+        ]
+      },
+      "properties" : {
+        "FID" : 33,
+        "NAME" : "Hell Station",
+        "TYPE" : "CPN",
+        "ALIAS1" : "HELL",
+        "X" : -119.20918624399999,
+        "Y" : 40.803055884800003,
+        "Source" : "KB GIS",
+        "Category" : "Service Feature"
+      }
+    },
+    {
+      "type" : "Feature",
+      "id" : 34,
+      "geometry" : {
+        "type" : "Point",
+        "coordinates" : [
+          -119.21668143257835,
+          40.795985564892426
+        ]
+      },
+      "properties" : {
+        "FID" : 34,
+        "NAME" : "Ice Nine Arctica",
+        "TYPE" : "CPN",
+        "ALIAS1" : "ICE9",
+        "X" : -119.21668143300001,
+        "Y" : 40.7959855649,
+        "Source" : "KB GIS",
+        "Category" : "Service Feature"
+      }
+    },
+    {
+      "type" : "Feature",
+      "id" : 35,
+      "geometry" : {
+        "type" : "Point",
+        "coordinates" : [
+          -119.21236837524104,
+          40.781405455973108
+        ]
+      },
+      "properties" : {
+        "FID" : 35,
+        "NAME" : "Arctica Center Camp",
+        "TYPE" : "CPN",
+        "ALIAS1" : "ICE6",
+        "X" : -119.212368375,
+        "Y" : 40.781405456000002,
+        "Source" : "KB GIS",
+        "Category" : "Service Feature"
+      }
+    },
+    {
+      "type" : "Feature",
+      "id" : 36,
+      "geometry" : {
+        "type" : "Point",
+        "coordinates" : [
+          -119.19033664851382,
+          40.776796946992448
+        ]
+      },
+      "properties" : {
+        "FID" : 36,
+        "NAME" : "Ice Cubed Arctica 3",
+        "TYPE" : "CPN",
+        "ALIAS1" : "ICE3",
+        "X" : -119.190336649,
+        "Y" : 40.776796947000001,
+        "Source" : "KB GIS",
+        "Category" : "Service Feature"
+      }
+    },
+    {
+      "type" : "Feature",
+      "id" : 37,
+      "geometry" : {
+        "type" : "Point",
+        "coordinates" : [
+          -119.20669384842877,
+          40.779837577810518
+        ]
+      },
+      "properties" : {
+        "FID" : 37,
+        "NAME" : "BLM Mobile Command Center",
+        "TYPE" : "CPN",
+        "ALIAS1" : "BLMMCC",
+        "X" : -119.206693848,
+        "Y" : 40.779837577800002,
+        "Source" : "KB GIS",
+        "Category" : "Operations Feature"
+      }
+    },
+    {
+      "type" : "Feature",
+      "id" : 38,
+      "geometry" : {
+        "type" : "Point",
+        "coordinates" : [
+          -119.23356999999993,
+          40.782609999999956
+        ]
+      },
+      "properties" : {
+        "FID" : 38,
+        "NAME" : "Point 1",
+        "TYPE" : "CPN",
+        "ALIAS1" : "PT1",
+        "X" : -119.23357,
+        "Y" : 40.782609999999998,
+        "Source" : "KB GPS",
+        "Category" : "Event Perimeter"
+      }
+    },
+    {
+      "type" : "Feature",
+      "id" : 39,
+      "geometry" : {
+        "type" : "Point",
+        "coordinates" : [
+          -119.20347856707363,
+          40.777522774281067
+        ]
+      },
+      "properties" : {
+        "FID" : 39,
+        "NAME" : "430 & B Plaza",
+        "TYPE" : "CPN",
+        "ALIAS1" : "4BP",
+        "X" : -119.203478567,
+        "Y" : 40.777522774300003,
+        "Source" : "KB GIS",
+        "Category" : "Civic Area"
+      }
+    },
+    {
+      "type" : "Feature",
+      "id" : 40,
+      "geometry" : {
+        "type" : "Point",
+        "coordinates" : [
+          -119.21516530302537,
+          40.786369840176263
+        ]
+      },
+      "properties" : {
+        "FID" : 40,
+        "NAME" : "730 & B Plaza",
+        "TYPE" : "CPN",
+        "ALIAS1" : "730BP",
+        "X" : -119.21516530300001,
+        "Y" : 40.786369840200003,
+        "Source" : "KB GIS",
+        "Category" : "Civic Area"
+      }
+    },
+    {
+      "type" : "Feature",
+      "id" : 41,
+      "geometry" : {
+        "type" : "Point",
+        "coordinates" : [
+          -119.2081,
+          40.782200000000003
+        ]
+      },
+      "properties" : {
+        "FID" : 41,
+        "NAME" : "DMV",
+        "TYPE" : "CPN",
+        "ALIAS1" : " ",
+        "X" : -119.2081,
+        "Y" : 40.782200000000003,
+        "Source" : "KB GIS",
+        "Category" : "Service Feature"
+      }
+    },
+    {
+      "type" : "Feature",
+      "id" : 42,
+      "geometry" : {
+        "type" : "Point",
+        "coordinates" : [
+          -119.22384899999999,
+          40.777000000000015
+        ]
+      },
+      "properties" : {
+        "FID" : 42,
+        "NAME" : "United Site Services",
+        "TYPE" : "CPN",
+        "ALIAS1" : "USS",
+        "X" : -119.223849,
+        "Y" : 40.777000000000001,
+        "Source" : "Bubblegique GPS",
+        "Category" : "Operations Feature"
+      }
+    },
+    {
+      "type" : "Feature",
+      "id" : 43,
+      "geometry" : {
+        "type" : "Point",
+        "coordinates" : [
+          -119.2081,
+          40.764000000000003
+        ]
+      },
+      "properties" : {
+        "FID" : 43,
+        "NAME" : "Airport",
+        "TYPE" : "CPN",
+        "ALIAS1" : "AIR",
+        "X" : -119.2081,
+        "Y" : 40.764000000000003,
+        "Source" : "Chaos List",
+        "Category" : "Service Feature"
+      }
+    }
+  ]
+}
