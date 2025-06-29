@@ -14,6 +14,7 @@ BAUD_RATE: Final[int] = 38400
 START_WAIT_TIME: Final[float] = 0.3
 LOOP_WAIT_TIME: Final[float] = 0.016
 DEFAULT_MAX_IDLE_TIME: Final[float] = 1.0  # seconds
+NOMINAL_MAX_SPEED: Final[float] = 7.0 # km/h
 
 
 def build_runtime_packet(speed: int, direction: int) -> bytes:
@@ -54,8 +55,40 @@ def build_runtime_packet(speed: int, direction: int) -> bytes:
     data[9] = 15  # This is the transmit finish packet! Technically a separate packet
     return bytes(data)
 
+def read_message_from_shark(message: bytes) -> dict[str, float]:
+    """
+    Read the SPM general information from the message.
+    
+    :param message: The message to read the SPM general information from
+    :return: The SPM general information
+    """
+    messagetype = (message[0] & 0x0F)
+    if messagetype == 1 : # Shark Power Module General Information
+        fuel_gauge = (message[1] & 31) # 0 - 18
+        ground_speed = (message[7] & 31) # 0 - 31
+        return {
+            "fuel_gauge": fuel_gauge * 100 / 18,
+            "ground_speed": ground_speed / 31 * NOMINAL_MAX_SPEED,
+        }
+    return {}
 
-def serial_communication_loop(ser: serial.Serial, wheelchair_state: models.WheelchairCommand, stop_event: threading.Event) -> None:
+
+
+def ReceiveMessage(ser: serial.Serial) -> bytes | None:
+    """Read bytes from serial port until End-of-Transmission byte is received."""
+    message_bytes = bytearray()
+    last_hex_value = 0x01
+    while last_hex_value != 0x0F:
+        data = ser.read(1)
+        if not data:
+            return None
+        hex_value = data[0]
+        message_bytes.extend(data)
+        last_hex_value = hex_value
+    return bytes(message_bytes)
+
+
+def serial_communication_loop(ser: serial.Serial, wheelchair_state: models.WheelchairCommand, stop_event: threading.Event, spm_general_information: dict[str, float]) -> None:
     """
     Continuous loop to send serial packets.
     
@@ -66,9 +99,11 @@ def serial_communication_loop(ser: serial.Serial, wheelchair_state: models.Wheel
     while not stop_event.is_set():
         speed_byte = normalization.normalize_range(-1.0, 1.0, 0, 1023, wheelchair_state.speed)
         direction_byte = normalization.normalize_range(-1.0, 1.0, 0, 1023, wheelchair_state.direction)
-        
         ser.write(build_runtime_packet(speed=speed_byte, direction=direction_byte))
         ser.flush()
+        spm_general_information_packet = ReceiveMessage(ser)
+        if spm_general_information_packet:
+            spm_general_information.update(read_message_from_shark(spm_general_information_packet))
         time.sleep(LOOP_WAIT_TIME)
 
 
@@ -87,6 +122,10 @@ class WheelchairController:
         self.serial_thread: threading.Thread | None = None
         self.stop_event = threading.Event()
         self.wheelchair_state = models.WheelchairCommand(timestamp=datetime.datetime.now())
+        self.spm_general_information: dict[str, float] = {
+            'fuel_gauge': 0.0,
+            'ground_speed': 0.0,
+        }
     
     def start(self) -> bool:
         """Attempt to open the serial port and spawn the TX thread.
@@ -114,7 +153,7 @@ class WheelchairController:
             self.stop_event.clear()
             self.serial_thread = threading.Thread(
                 target=serial_communication_loop,
-                args=(self.serial_connection, self.wheelchair_state, self.stop_event),
+                args=(self.serial_connection, self.wheelchair_state, self.stop_event, self.spm_general_information),
                 daemon=True,
             )
             self.serial_thread.start()
@@ -168,3 +207,11 @@ class WheelchairController:
             "direction": self.wheelchair_state.direction,
             "timestamp": self.wheelchair_state.timestamp.isoformat()
         }
+
+    def get_spm_general_information(self) -> dict[str, float]:
+        """
+        Get current SPM general information.
+        
+        :return: Current SPM general information
+        """
+        return self.spm_general_information

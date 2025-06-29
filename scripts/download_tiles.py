@@ -5,14 +5,14 @@ import asyncio
 import aiohttp
 
 # Constants
-CENTER_LAT = 40.8328
-CENTER_LON = -119.1600
+CENTER_LAT = 40.785501
+CENTER_LON = -119.204636
 ZOOM_LEVEL_VS_RADIUS_KM = {
-    3: 3200,
-    4: 1600,
-    5: 800,
-    6: 400,
-    7: 200,
+    3: 111 * 360,
+    4: 111 * 360,
+    5: 111 * 360,
+    6: 111 * 360,
+    7: 1200,
     8: 320,
     9: 160,
     10: 80,
@@ -25,7 +25,6 @@ ZOOM_LEVEL_VS_RADIUS_KM = {
     17: 5,
     18: 5,
     19: 5,
-    20: 5,
 }
 
 TILES_PATH = os.path.join(os.path.dirname(__file__), "..", "static", "tiles")
@@ -113,7 +112,8 @@ async def download_tiles(lat: float, lon: float, radius_km: float, zoom_levels: 
         tasks = []
         for x in range(x_start, x_end + 1):
             for y in range(y_start, y_end + 1):
-                tasks.append(async_download_tile(z, x, y))
+                if not os.path.exists(os.path.join(TILES_PATH, str(z), str(x), f"{y}.png")):
+                    tasks.append(async_download_tile(z, x, y))
         await asyncio.gather(*tasks)
     
 

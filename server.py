@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 from contextlib import asynccontextmanager
+import math
 from typing import Any, Dict
 import time
 import os
@@ -110,8 +111,10 @@ class ControllerServer:
 
         # -------- static files --------
         app.mount("/static", StaticFiles(directory=STATIC_PATH), name="static")
+        app.mount("/js", StaticFiles(directory=os.path.join(STATIC_PATH, "js")), name="js")
         app.mount("/burning_man_2023_geojson", StaticFiles(directory=os.path.join(STATIC_PATH, "burning_man_2023_geojson")), name="geojson")
         app.mount("/tiles", StaticFiles(directory=os.path.join(STATIC_PATH, "tiles")), name="tiles")
+        app.mount("/icons", StaticFiles(directory=os.path.join(STATIC_PATH, "icons")), name="icons")
         
         # -------- health & root --------
         # TODO(taillades): update burning man geojson to 2025
@@ -197,13 +200,43 @@ class ControllerServer:
             except Exception as exc:
                 raise HTTPException(status_code=500, detail=str(exc)) from exc
 
-
+        # -------- Position --------
+        @app.get("/position")
+        async def position() -> Dict[str, Any]:  # noqa: D401
+            # TODO(taillades): get position from Kalman filter
+            return {
+                "lat": 40.7865,
+                "lon": -119.2065,
+            }
+        
+        @app.get("/theta")
+        async def theta() -> Dict[str, Any]:  # noqa: D401
+            """The angle betwen the north-south axis and the wheelchair's direction in radians."""
+            # TODO(taillades): get angle from Kalman filter
+            return {
+                "angle": 45 / 180 * math.pi,
+            }
+        
         # -------- Dashboard (static HTML) --------
         @app.get("/dashboard", summary="Live controller dashboard")
         async def dashboard() -> FileResponse:  # noqa: D401
             """Return the HTML dashboard for live telemetry."""
             file_path = Path(__file__).resolve().parent / "static/monitor.html"
             return FileResponse(file_path)
+        
+        @app.get("/fuel_gauge")
+        async def fuel_gauge() -> Dict[str, Any]:  # noqa: D401
+            return {
+                'left': self.left_service.get_spm_general_information()['fuel_gauge'],
+                'right': self.right_service.get_spm_general_information()['fuel_gauge'],
+            }
+        
+        @app.get("/ground_speed")
+        async def ground_speed() -> Dict[str, Any]:  # noqa: D401
+            return {
+                'left': self.left_service.get_spm_general_information()['ground_speed'],
+                'right': self.right_service.get_spm_general_information()['ground_speed'],
+            }
 
     # ----------------------------- public API -----------------------------
 
