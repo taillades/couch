@@ -659,3 +659,8 @@ svg.leaflet-image-layer.leaflet-interactive path {
 		print-color-adjust: exact;
 		}
 	}
+
+/* Hide Leaflet attribution banner */
+.leaflet-control-attribution {
+    display: none !important;
+}

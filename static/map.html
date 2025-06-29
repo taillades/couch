@@ -8,15 +8,121 @@
   <link rel="stylesheet" href="/js/leaflet.css" />
   <style>
     html, body, #map { height: 100%; margin: 0; padding: 0; }
+    /* ---------------- Fuel gauge widget ---------------- */
+    #battery-container {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      pointer-events: none;   /* don't block map interactions */
+    }
+
+    .battery {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 12px;
+      color: #fff;
+      text-shadow: 0 0 3px #000;
+    }
+
+    .battery-body {
+      position: relative;
+      width: 40px;
+      height: 16px;
+      border: 2px solid #000;
+      border-radius: 3px;
+      background: #444;
+      overflow: hidden;
+    }
+
+    .battery-level {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 0%;
+      background: #4caf50;
+      transition: width 0.3s ease;
+    }
+
+    .battery-tip {
+      width: 6px;
+      height: 8px;
+      border: 2px solid #000;
+      border-left: none;
+      background: #000;
+      border-radius: 0 2px 2px 0;
+    }
+
+    /* ---------------- Speed gauge widget ---------------- */
+    #speed-gauge-container {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      width: 160px;
+      height: 80px;
+      z-index: 1000;
+      pointer-events: none;
+    }
   </style>
 </head>
 <body>
   <div id="map"></div>
 
+  <!-- Fuel gauges -------------------------------------------------- -->
+  <div id="battery-container">
+    <div class="battery">
+      <span class="battery-label">L:</span>
+      <div class="battery-body">
+        <div class="battery-level" id="left-battery-level"></div>
+      </div>
+      <div class="battery-tip"></div>
+      <span class="battery-label" id="left-battery-label">--%</span>
+    </div>
+
+    <div class="battery">
+      <span class="battery-label">R:</span>
+      <div class="battery-body">
+        <div class="battery-level" id="right-battery-level"></div>
+      </div>
+      <div class="battery-tip"></div>
+      <span class="battery-label" id="right-battery-label">--%</span>
+    </div>
+  </div>
+
+  <!-- Speed gauge -------------------------------------------------- -->
+  <div id="speed-gauge-container">
+    <svg id="speed-gauge" viewBox="0 0 160 80" width="160" height="80">
+      <!-- background arc -->
+      <path d="M10 80 A70 70 0 0 1 150 80" fill="none" stroke="#555" stroke-width="12" stroke-linecap="round" />
+      <!-- tick marks -->
+      <g stroke="#777" stroke-width="2">
+        <line x1="24" y1="75" x2="28" y2="68" />
+        <line x1="44" y1="64" x2="49" y2="57" />
+        <line x1="64" y1="54" x2="69" y2="47" />
+        <line x1="80" y1="50" x2="80" y2="42" />
+        <line x1="96" y1="54" x2="91" y2="47" />
+        <line x1="116" y1="64" x2="111" y2="57" />
+        <line x1="136" y1="75" x2="132" y2="68" />
+      </g>
+      <!-- needle -->
+      <line id="gauge-needle" x1="80" y1="80" x2="80" y2="20" stroke="#e91e63" stroke-width="4" stroke-linecap="round" transform="rotate(-90 80 80)" />
+      <!-- center cap -->
+      <circle cx="80" cy="80" r="6" fill="#e91e63" />
+      <!-- speed label -->
+      <text id="speed-display" x="80" y="70" text-anchor="middle" fill="#fff" font-size="18" font-family="Arial">0.0 km/h</text>
+    </svg>
+  </div>
+
   <script src="/js/leaflet.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/leaflet-rotatedmarker@0.2.0/leaflet.rotatedMarker.min.js"></script>
+  <script src="/js/rotatedMarker.min.js"></script>
   <script>
-    const map = L.map('map').setView([40.7865, -119.2065], 13);  // Golden Spike
+    const map = L.map('map', { attributionControl: false }).setView([40.7865, -119.2065], 13);  // Golden Spike
 
     // Local raster tile layer
     L.tileLayer('/tiles/{z}/{x}/{y}.png', {
@@ -74,7 +180,27 @@
       rotationAngle: 0,
       rotationOrigin: 'center center'
     }).addTo(map);
-    // ------------------------------------------------------------------
+
+    // variables for single target and line
+    let targetMarker = null;
+    let routeLine    = null;
+    let targetLatLng = null;
+
+    function updateRouteLine () {
+      if (!targetLatLng) {
+        if (routeLine) {
+          map.removeLayer(routeLine);
+          routeLine = null;
+        }
+        return;
+      }
+      const couchPos = couchMarker.getLatLng();
+      if (!routeLine) {
+        routeLine = L.polyline([couchPos, targetLatLng], { color: 'red' }).addTo(map);
+      } else {
+        routeLine.setLatLngs([couchPos, targetLatLng]);
+      }
+    }
 
     // --- live couch updates ------------------------------------------
     async function updateCouchPosition () {
@@ -86,10 +212,11 @@
         // Fetch heading (angle in radians) from server and convert to degrees
         const thetaRes = await fetch('/theta');
         if (!thetaRes.ok) return;
-        const { angle } = await thetaRes.json(); // angle is in radians
+        const angle = await thetaRes.json(); // angle is in radians
 
         couchMarker.setLatLng([lat, lon]);
         couchMarker.setRotationAngle(180 + angle * 180 / Math.PI);
+        updateRouteLine();
       } catch (err) {
         console.error('Failed to update couch position', err);
       }
@@ -97,18 +224,105 @@
 
     updateCouchPosition();        // initial position
     setInterval(updateCouchPosition, 2000);   // every 2 s
-    // ------------------------------------------------------------------
 
+    // --- fuel gauge updates ----------------------------------------
+    /**
+     * Update the UI for a single battery element.
+     * @param {string} side   Either "left" or "right".
+     * @param {number} pct    Charge percentage (0–100).
+     */
+    function updateBattery(side, pct) {
+      const levelEl = document.getElementById(`${side}-battery-level`);
+      const labelEl = document.getElementById(`${side}-battery-label`);
+      if (!levelEl || !labelEl || Number.isNaN(pct)) return;
+
+      const clamped = Math.max(0, Math.min(100, pct));
+      levelEl.style.width = `${clamped}%`;
+
+      let color = '#f44336';   // red by default
+      if (clamped > 50) {
+        color = '#4caf50';     // green
+      } else if (clamped > 20) {
+        color = '#ff9800';     // orange
+      }
+      levelEl.style.backgroundColor = color;
+      labelEl.textContent = `${clamped}%`;
+    }
+
+    /**
+     * Fetch the current fuel gauge levels and update the batteries.
+     */
+    async function updateFuelGauge() {
+      try {
+        const res = await fetch('/fuel_gauge', { cache: 'no-store' });
+        if (!res.ok) return;
+        const data = await res.json();
+        updateBattery('left',  data.left);
+        updateBattery('right', data.right);
+      } catch (err) {
+        console.error('Failed to update fuel gauge', err);
+      }
+    }
+
+    updateFuelGauge();            // initial fetch
+    setInterval(updateFuelGauge, 5000);  // every 5 s
+
+    // Add a custom icon for the target marker
+    const targetIcon = L.icon({
+      iconUrl: '/icons/target.png',
+      iconSize: [32, 32],
+      iconAnchor: [16, 16],
+      popupAnchor: [0, -16]
+    });
     // Optional: map click to send lat/lon to server
     map.on('click', function(e) {
       const { lat, lng } = e.latlng;
-      L.marker([lat, lng]).addTo(map);
-      fetch('/goto', {
+      targetLatLng = L.latLng(lat, lng);
+
+      // replace previous target marker
+      if (targetMarker) map.removeLayer(targetMarker);
+      targetMarker = L.marker(targetLatLng, { icon: targetIcon }).addTo(map);
+
+      updateRouteLine();
+
+      fetch('/target_position', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ latitude: lat, longitude: lng })
-      }).then(r => console.log(`Sent rover command: ${lat}, ${lng}`));
+        body: JSON.stringify({ lat: lat, lon: lng })
+      }).then(r => console.log(`Updated target position: ${lat}, ${lng}`));
     });
+
+    // --- speed gauge updates ---------------------------------------
+    /**
+     * Rotate the needle and update text for the speed gauge.
+     *
+     * @param {number} speedMph Speed in mph (0–5).
+     */
+    function updateSpeedGauge(speedMph) {
+      if (Number.isNaN(speedMph)) return;
+      const clamped = Math.max(0, Math.min(5, speedMph));
+      const angle = -90 + (clamped / 5) * 180;   // -90° (left) to +90° (right)
+      const needle = document.getElementById('gauge-needle');
+      if (needle) needle.setAttribute('transform', `rotate(${angle} 80 80)`);
+      const label = document.getElementById('speed-display');
+      if (label) label.textContent = `${clamped.toFixed(1)} mph`;
+    }
+
+    /** Fetch average ground speed and refresh the gauge. */
+    async function updateSpeed() {
+      try {
+        const res = await fetch('/ground_speed', { cache: 'no-store' });
+        if (!res.ok) return;
+        const data = await res.json();
+        const speed = (data.left + data.right) / 2;
+        updateSpeedGauge(speed);
+      } catch (err) {
+        console.error('Failed to update speed', err);
+      }
+    }
+
+    updateSpeed();
+    setInterval(updateSpeed, 1000);
   </script>
 </body>
 </html>

@@ -14,7 +14,7 @@ BAUD_RATE: Final[int] = 38400
 START_WAIT_TIME: Final[float] = 0.3
 LOOP_WAIT_TIME: Final[float] = 0.016
 DEFAULT_MAX_IDLE_TIME: Final[float] = 1.0  # seconds
-NOMINAL_MAX_SPEED: Final[float] = 7.0 # km/h
+NOMINAL_MAX_SPEED: Final[float] = 4.5 # mph
 
 
 def build_runtime_packet(speed: int, direction: int) -> bytes:

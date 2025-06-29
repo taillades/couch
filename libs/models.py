@@ -26,4 +26,8 @@ class WheelchairCommand(BaseModel):
     direction: float = 0.0
     timestamp: datetime.datetime
     
-
+class Geopoint(BaseModel):
+    """Geopoint model."""
+    lat: float
+    lon: float
+    
