@@ -74,7 +74,7 @@
     #stop-panel {
       position: absolute;
       bottom: 10px;
-      left: 10px;
+      left: 80px; /* shift right next to the Home button (60px width + 10px gap) */
       z-index: 1000;
     }
 
@@ -100,7 +100,7 @@
     /* ---------------- Home (center) button ---------------- */
     #home-panel {
       position: absolute;
-      bottom: 80px;   /* place above stop button */
+      bottom: 10px;  /* bottom-left corner */
       left: 10px;
       z-index: 1000;
     }
@@ -125,6 +125,33 @@
 
     .home-button.locked {
       background: #0d47a1;   /* darker when follow mode is active */
+    }
+
+    /* ---------------- Temperature header ---------------- */
+    #temperature-container {
+      position: absolute;
+      top: 10px;
+      right: 120px;          /* place to the left of the battery gauges */
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      background: #333;
+      padding: 4px 8px;
+      border-radius: 4px;
+      z-index: 1000;
+      color: #fff;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 12px;
+      pointer-events: none;  /* don't block map interactions */
+    }
+
+    .temp-item {
+      display: flex;
+      gap: 2px;
+    }
+
+    .temp-label {
+      font-weight: bold;
     }
   </style>
 </head>
@@ -190,6 +217,15 @@
         <path d="M3 10l9-7 9 7v10a1 1 0 0 1-1 1h-5a1 1 0 0 1-1-1v-5h-4v5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V10z"/>
       </svg>
     </div>
+  </div>
+
+  <!-- Temperature header ------------------------------------------- -->
+  <div id="temperature-container">
+    <span class="temp-item"><span class="temp-label">Left:</span> <span id="temp-left">--</span>°C</span>
+    <span class="temp-item"><span class="temp-label">Right:</span> <span id="temp-right">--</span>°C</span>
+    <span class="temp-item"><span class="temp-label">Air:</span> <span id="temp-air">--</span>°C</span>
+    <span class="temp-item"><span class="temp-label">Box:</span> <span id="temp-box">--</span>°C</span>
+    <span class="temp-item"><span class="temp-label">Light Bat:</span> <span id="temp-battery">--</span>°C</span>
   </div>
 
   <script src="/js/leaflet.js"></script>
@@ -341,6 +377,40 @@
 
     updateFuelGauge();            // initial fetch
     setInterval(updateFuelGauge, 5000);  // every 5 s
+
+    // --- temperature header updates ----------------------------------
+    /**
+     * Fetch the five temperature readings and refresh the header bar.
+     */
+    async function updateTemperatures() {
+      try {
+        const res = await fetch('/temperature', { cache: 'no-store' });
+        if (!res.ok) return;
+        const data = await res.json();
+
+        /**
+         * Helper to update a temperature element by ID.
+         * @param {string} id   Element ID (without #)
+         * @param {number} val  Temperature value in °C
+         */
+        const setTemp = (id, val) => {
+          const el = document.getElementById(id);
+          if (!el || Number.isNaN(val)) return;
+          el.textContent = val.toFixed(1);
+        };
+
+        setTemp('temp-left',     data.left);
+        setTemp('temp-right',    data.right);
+        setTemp('temp-air',      data.air);
+        setTemp('temp-box',      data.box);
+        setTemp('temp-battery',  data.battery);
+      } catch (err) {
+        console.error('Failed to update temperatures', err);
+      }
+    }
+
+    updateTemperatures();
+    setInterval(updateTemperatures, 5000);
 
     // Add a custom icon for the target marker
     const targetIcon = L.icon({
