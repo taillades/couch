@@ -5,7 +5,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <link rel="stylesheet" href="/js/leaflet.css" />
   <style>
     html, body, #map { height: 100%; margin: 0; padding: 0; }
   </style>
@@ -13,7 +13,8 @@
 <body>
   <div id="map"></div>
 
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="/js/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/leaflet-rotatedmarker@0.2.0/leaflet.rotatedMarker.min.js"></script>
   <script>
     const map = L.map('map').setView([40.7865, -119.2065], 13);  // Golden Spike
 
@@ -60,6 +61,38 @@
     addGeoJSONLayer("Promenades_Burns.json", { color: '#00cc99', weight: 2 });
     addGeoJSONLayer("Portable_Toilets.json", { color: 'blue', showPoints: true });
     addGeoJSONLayer("CPNs.json", { color: '#ff00ff', showPoints: true });
+
+    // --- couch (rover) marker ----------------------------------------
+    const couchIcon = L.icon({
+      iconUrl: '/icons/couch.png',
+      iconSize:  [50, 50],
+      iconAnchor:[25, 25]             // centres the icon
+    });
+
+    const couchMarker = L.marker([40.7865, -119.2065], {
+      icon: couchIcon,
+      rotationAngle: 0,
+      rotationOrigin: 'center center'
+    }).addTo(map);
+    // ------------------------------------------------------------------
+
+    // --- live couch updates ------------------------------------------
+    async function updateCouchPosition () {
+      try {
+        const res  = await fetch('/position');
+        if (!res.ok) return;                   // ignore 404/500 etc.
+        const { lat, lon, angle } = await res.json();
+
+        couchMarker.setLatLng([lat, lon]);
+        couchMarker.setRotationAngle(angle);
+      } catch (err) {
+        console.error('Failed to update couch position', err);
+      }
+    }
+
+    updateCouchPosition();        // initial position
+    setInterval(updateCouchPosition, 2000);   // every 2 s
+    // ------------------------------------------------------------------
 
     // Optional: map click to send lat/lon to server
     map.on('click', function(e) {
