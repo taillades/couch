@@ -21,6 +21,7 @@ Exciting, right? Now we can look like it's a Tuesday 8pm and we're watching TV, 
 - https://www.youtube.com/watch?v=8B36xSlDK-Y
 - https://www.wheelchairdriver.com/board/viewtopic.php?f=2&t=4867&start=570
 - https://comma.ai/openpilot
+- https://www.dynamiccontrols.com/sites/default/files/2018-05/SHARK%20PMA_PMB_PMC%20Installation%20Manual%20Iss%207.pdf
 
 # Install on your raspberry pi
 
