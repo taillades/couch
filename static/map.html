@@ -96,6 +96,36 @@
     .stop-button:active {
       background: #d32f2f;
     }
+
+    /* ---------------- Home (center) button ---------------- */
+    #home-panel {
+      position: absolute;
+      bottom: 80px;   /* place above stop button */
+      left: 10px;
+      z-index: 1000;
+    }
+
+    .home-button {
+      width: 60px;
+      height: 60px;
+      background: #2196f3;              /* blue background */
+      border: none;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      user-select: none;
+      box-shadow: 0 0 6px rgba(0, 0, 0, 0.6);
+    }
+
+    .home-button:active {
+      background: #1976d2;
+    }
+
+    .home-button.locked {
+      background: #0d47a1;   /* darker when follow mode is active */
+    }
   </style>
 </head>
 <body>
@@ -150,6 +180,15 @@
   <div id="stop-panel" style="display:none;">
     <div id="stop-button" class="stop-button">
       <img src="/icons/stop.png" alt="Stop" width="100%" height="100%" style="pointer-events:none; object-fit:contain;" />
+    </div>
+  </div>
+
+  <!-- Home button -------------------------------------------------- -->
+  <div id="home-panel">
+    <div id="home-button" class="home-button">
+      <svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true" fill="#fff">
+        <path d="M3 10l9-7 9 7v10a1 1 0 0 1-1 1h-5a1 1 0 0 1-1-1v-5h-4v5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V10z"/>
+      </svg>
     </div>
   </div>
 
@@ -251,6 +290,8 @@
         couchMarker.setLatLng([lat, lon]);
         couchMarker.setRotationAngle(180 + angle * 180 / Math.PI);
         updateRouteLine();
+        // if follow mode active keep map centered
+        if (typeof maybeFollow === 'function') maybeFollow();
       } catch (err) {
         console.error('Failed to update couch position', err);
       }
@@ -325,7 +366,7 @@
         body: JSON.stringify({ lat: lat, lon: lng })
       }).then(r => console.log(`Updated target position: ${lat}, ${lng}`));
 
-      // show stop-target panel
+      // show stop-target panel 
       const panel = document.getElementById('stop-panel');
       if (panel) panel.style.display = 'block';
     });
@@ -386,6 +427,70 @@
     // bind stop button
     const stopBtn = document.getElementById('stop-button');
     if (stopBtn) stopBtn.addEventListener('click', clearTarget);
+
+    // Home button interactions --------------------------------------
+    const homeBtn = document.getElementById('home-button');
+    let followCouch = false;
+    let longPressTimer = null;
+
+    function recenterMap() {
+      const pos = couchMarker.getLatLng();
+      map.setView(pos, 16);
+    }
+
+    function enableFollow() {
+      followCouch = true;
+      homeBtn?.classList.add('locked');
+      recenterMap();
+    }
+
+    function disableFollow() {
+      followCouch = false;
+      homeBtn?.classList.remove('locked');
+    }
+
+    function toggleFollow() {
+      if (followCouch) {
+        disableFollow();
+      } else {
+        enableFollow();
+      }
+    }
+
+    function startLongPress() {
+      longPressTimer = window.setTimeout(() => {
+        toggleFollow();
+        longPressTimer = null;
+      }, 2000); // 2 s
+    }
+
+    function cancelLongPress() {
+      if (longPressTimer !== null) {
+        clearTimeout(longPressTimer);
+        longPressTimer = null;
+      }
+    }
+
+    if (homeBtn) {
+      // Short click: recenter once
+      homeBtn.addEventListener('click', () => {
+        if (!longPressTimer) {
+          // Only recenter if it wasn't a long-press action
+          recenterMap();
+        }
+      });
+
+      // Long press detection
+      ['mousedown', 'touchstart'].forEach(evt => homeBtn.addEventListener(evt, startLongPress));
+      ['mouseup', 'mouseleave', 'touchend', 'touchcancel'].forEach(evt => homeBtn.addEventListener(evt, cancelLongPress));
+    }
+
+    // Keep map centered when follow mode active
+    function maybeFollow() {
+      if (followCouch) {
+        recenterMap();
+      }
+    }
   </script>
 </body>
 </html>
