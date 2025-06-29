@@ -54,9 +54,28 @@ sudo systemctl enable ssh
 sudo systemctl start ssh
 ```
 
-## Download the code
+## Make sure the sound is on
 
 ```
+sudo vim /boot/firmware/config.txt
+```
+
+Add: 
+
+```
+/boot/firmware/config.txt
+```
+
+Then reboot:
+
+```
+sudo reboot
+```
+
+
+## Download the code
+
+```bash
 mkdir ~/src
 cd ~/src
 git clone git@github.com:taillades/couch.git
@@ -78,6 +97,7 @@ sudo systemctl start couch-server.service
 
 # Check the status
 sudo systemctl status couch-server.service
+
 # Stop the service
 sudo systemctl stop couch-server.service
 
@@ -89,4 +109,41 @@ sudo journalctl -u couch-server.service -f
 
 # Disable auto-start
 sudo systemctl disable couch-server.service
+```
+
+## Optional: activate bluetooth
+
+1. Update Your System
+Open a terminal and run:
+
+```bash
+sudo apt update
+sudo apt upgrade
+```
+Also install Bluetooth tools (if not already installed):
+
+```bash
+sudo apt install pulseaudio pulseaudio-module-bluetooth pavucontrol bluez
+```
+
+2. Enable and Start Bluetooth Services
+
+```bash
+sudo systemctl enable bluetooth
+sudo systemctl start bluetooth
+```
+
+If using audio, make sure pulseaudio is running:
+
+```
+pulseaudio --start
+```
+
+3. Add speaker
+
+```bash
+# optional: add JBL
+pair 2C:FD:B4:23:C3:72
+trust 2C:FD:B4:23:C3:72
+connect 2C:FD:B4:23:C3:72
 ```

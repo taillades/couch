@@ -11,13 +11,26 @@ WorkingDirectory=/home/pi/src/couch
 Environment=PYTHONPATH=/home/pi/src/couch
 ExecStart=/home/pi/src/couch/.venv/bin/python run.py
 Restart=always
-RestartSec=3
+RestartSec=5
 StandardOutput=journal
-StandardError=journalsudo journalctl -u couch-server.service -f
+StandardError=journal
+PermissionsStartOnly=true
+ExecStartPre=/bin/sleep 5
+WorkingDirectory=/home/pi/src/couch
 
+# 💡 Allow audio, DBus, and Bluetooth access
+Environment="DISPLAY=:0"
+Environment="XDG_RUNTIME_DIR=/run/user/1000"
+Environment="SDL_AUDIODRIVER=alsa"
+Environment="PULSE_SERVER=unix:/run/user/1000/pulse/native"
+
+# Required for ALSA / PulseAudio / Bluetooth
+DeviceAllow=char-* rw
+CapabilityBoundingSet=CAP_SYS_ADMIN CAP_NET_ADMIN
+AmbientCapabilities=CAP_SYS_ADMIN CAP_NET_ADMIN
 
 # Give the service access to USB devices
-SupplementaryGroups=dialout input
+SupplementaryGroups=dialout input bluetooth audio
 
 [Install]
 WantedBy=multi-user.target

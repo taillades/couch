@@ -10,7 +10,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
 from pathlib import Path
 
-from libs import differential, models, shark, xbox
+from libs import differential, models, shark, speaker, xbox
 
 
 class ControllerServer:
@@ -35,7 +35,7 @@ class ControllerServer:
 
         self.remote = xbox.XboxRemote()
         self.deadzone = deadzone
-
+        
         self.app = FastAPI(title="Couch Unified Server", version="1.0.0", lifespan=self._lifespan)
         self._setup_routes()
 
@@ -54,6 +54,11 @@ class ControllerServer:
         self.left_service.start()
         self.right_service.start()
         self._task = asyncio.create_task(self._control_loop())
+        try:
+            speaker.play_music('ff7_victory')
+        except Exception as exc:
+            print(f"Error playing music: {exc}")
+            pass
         yield
         self._task.cancel()
         try:
@@ -77,6 +82,7 @@ class ControllerServer:
                 start_time = time.time()
                 speed, direction = self.remote.get_joystick_speed_direction()
                 speed = self._apply_deadzone(speed)
+                direction = self._apply_deadzone(direction)
                 right_cmd, left_cmd = self.differential_drive.calculate_wheelchair_states(speed, direction)
                 self.left_service.control(left_cmd.speed, left_cmd.direction)
                 self.right_service.control(right_cmd.speed, right_cmd.direction)
@@ -180,6 +186,7 @@ class ControllerServer:
                 }
             except Exception as exc:
                 raise HTTPException(status_code=500, detail=str(exc)) from exc
+
 
         # -------- Dashboard (static HTML) --------
         @app.get("/dashboard", summary="Live controller dashboard")
