@@ -3,6 +3,10 @@
 import datetime
 from libs import models
 
+DEFAULT_DISTANCE_BETWEEN_WHEELCHAIRS = 1.01
+DEFAULT_MAX_SPEED = 1.0
+DEFAULT_MAX_DIRECTION = 0.2
+
 def _zero_safe_division(a: float, b: float) -> float:
     if b == 0:
         return 2**100
@@ -16,7 +20,15 @@ def _sign(a: float) -> float:
 class DifferentialDrive:
     """Differential drive library."""
 
-    def __init__(self, distance_between_wheelchairs: float, max_speed: float, max_direction: float) -> None:
+    def __init__(self, 
+                 distance_between_wheelchairs: float = DEFAULT_DISTANCE_BETWEEN_WHEELCHAIRS, 
+                 max_speed: float = DEFAULT_MAX_SPEED, 
+                 max_direction: float = DEFAULT_MAX_DIRECTION) -> None:
+        """
+        :param distance_between_wheelchairs: Center-to-center distance between wheelchairs (in meters)
+        :param max_speed: Maximum speed for the wheelchairs (from shark.MAX_SPEED env var if not provided)
+        :param max_direction: Maximum direction for the wheelchairs (from shark.MAX_DIRECTION env var if not provided)
+        """
         self.distance_between_wheelchairs = distance_between_wheelchairs
         self.max_speed = max_speed
         self.max_direction = max_direction

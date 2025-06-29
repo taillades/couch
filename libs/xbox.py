@@ -48,8 +48,9 @@ class XboxRemote:
     def stop(self) -> None:
         """Stop listening for remote input."""
         self._running = False
-        if self._thread:
-            self._thread.join()
+        if self._thread and self._thread.is_alive():
+            # Do not block indefinitely in case the underlying library hangs
+            self._thread.join(timeout=1.0)
             
     def _input_loop(self) -> None:
         """Main input processing loop."""
@@ -136,7 +137,7 @@ class XboxRemote:
         Returns:
             tuple: (speed, direction) where speed is x and direction is y
         """
-        return self.left_y, self.left_x
+        return -self.left_y, -self.left_x
         
     def add_button_callback(self, button: str, callback: Callable) -> None:
         """
