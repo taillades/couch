@@ -37,6 +37,11 @@ def run(
         envvar="DEADZONE",
         help="Joystick deadzone value (from DEADZONE env var if not provided)",
     ),
+    play_intro: bool = typer.Option(
+        True,
+        envvar="PLAY_INTRO",
+        help="Play the intro music (from PLAY_INTRO env var if not provided)",
+    ),
     reload: bool = typer.Option(
         False,
         envvar="RELOAD",
@@ -56,6 +61,7 @@ def run(
         left_serial_port=left_serial_port,
         right_serial_port=right_serial_port,
         deadzone=deadzone,
+        play_intro=play_intro,
         reload=reload,
     )
 

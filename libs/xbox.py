@@ -36,14 +36,20 @@ class XboxRemote:
         
         
         self._callbacks: Dict[str, Callable[[Any], None]] = {
-            'button_down': lambda _: play_music('fuck_your_burn'),
+            'button_down': lambda _: self._play_music_callback('fuck_your_burn'),
             'button_a': lambda _: self._cruise_mode_callback(True),
             'button_b': lambda _: self._cruise_mode_callback(False),
-            
         }
         # Deadzone for joystick (to prevent drift)
         self.deadzone = 0.1
         
+    def _play_music_callback(self, music_file: str) -> None:
+        """Callback for play music button."""
+        def music_thread():
+            play_music(music_file)
+        thread = threading.Thread(target=music_thread, daemon=True)
+        thread.start()
+
     def _cruise_mode_callback(self, value: bool) -> None:
         """Callback for cruise mode button."""
         self.cruise_mode = value
@@ -95,6 +101,24 @@ class XboxRemote:
                 self.right_x = self._normalize_axis(event.state)
             elif event.code == 'ABS_RY':
                 self.right_y = self._normalize_axis(event.state)
+            elif event.code == 'ABS_HAT0Y':
+                # It's a bit weird, but the hat is -1 when up and 1 when down
+                if event.state == 0:
+                    self.button_up = False
+                    self.button_down = False
+                elif event.state == -1:
+                    self.button_up = True
+                    self._trigger_callback('button_up', self.button_up)
+                elif event.state == 1:
+                    self.button_down = True
+                    self._trigger_callback('button_down', self.button_down)
+            elif event.code == 'ABS_HAT0X':
+                if event.state == 1:
+                    self.button_right = True
+                    self._trigger_callback('button_right', self.button_right)
+                elif event.state == -1:
+                    self.button_left = True
+                    self._trigger_callback('button_left', self.button_left)
         elif event.ev_type == 'Key':
             if event.code == 'BTN_SOUTH':   
                 self.button_a = bool(event.state)
@@ -114,24 +138,6 @@ class XboxRemote:
             elif event.code == 'BTN_START':
                 self.button_start = bool(event.state)
                 self._trigger_callback('button_start', self.button_start)
-            elif event.code == 'ABS_HAT0Y':
-                # It's a bit weird, but the hat is -1 when up and 1 when down
-                if event.state == 0:
-                    self.button_up = False
-                    self.button_down = False
-                elif event.state == -1:
-                    self.button_up = True
-                    self._trigger_callback('button_up', self.button_up)
-                elif event.state == 0:
-                    self.button_down = True
-                    self._trigger_callback('button_down', self.button_down)
-            elif event.code == 'ABS_HAT0X':
-                if event.state == 1:
-                    self.button_right = True
-                    self._trigger_callback('button_right', self.button_right)
-                elif event.state == -1:
-                    self.button_left = True
-                    self._trigger_callback('button_left', self.button_left)
                 
     def _normalize_axis(self, value: int) -> float:
         """Normalize axis value from raw input to -1.0 to 1.0 range."""

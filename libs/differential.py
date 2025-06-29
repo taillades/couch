@@ -3,7 +3,8 @@
 import datetime
 from libs import models
 
-DEFAULT_DISTANCE_BETWEEN_WHEELCHAIRS = 1.01
+# This has been fine tuned for our couch
+DEFAULT_DISTANCE_BETWEEN_WHEELCHAIRS = 10
 DEFAULT_MAX_SPEED = 1.0
 DEFAULT_MAX_DIRECTION = 0.2
 

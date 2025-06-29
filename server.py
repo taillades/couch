@@ -22,17 +22,20 @@ class ControllerServer:
         left_serial_port: str,
         right_serial_port: str,
         deadzone: float,
+        play_intro: bool,
     ) -> None:
         """Build the unified server.
 
         :param left_serial_port: Serial port for the left wheelchair controller
         :param right_serial_port: Serial port for the right wheelchair controller
         :param deadzone: Ignore absolute joystick values below this threshold
+        :param play_intro: Play the intro music
         """
         self.left_service = shark.WheelchairController(port=left_serial_port)
         self.right_service = shark.WheelchairController(port=right_serial_port)
         self.differential_drive = differential.DifferentialDrive()
-
+        self.play_intro = play_intro
+        
         self.remote = xbox.XboxRemote()
         self.deadzone = deadzone
         
@@ -54,11 +57,12 @@ class ControllerServer:
         self.left_service.start()
         self.right_service.start()
         self._task = asyncio.create_task(self._control_loop())
-        try:
-            speaker.play_music('ff7_victory')
-        except Exception as exc:
-            print(f"Error playing music: {exc}")
-            pass
+        if self.play_intro:
+            try:
+                speaker.play_music('ff7_victory')
+            except Exception as exc:
+                print(f"Error playing music: {exc}")
+                pass
         yield
         self._task.cancel()
         try:
@@ -211,6 +215,7 @@ def run_server(
     left_serial_port: str,
     right_serial_port: str,
     deadzone: float,
+    play_intro: bool,
     reload: bool = False,
 ) -> None:
     """Convenience wrapper that instantiates :class:`ControllerServer` and calls :py:meth:`ControllerServer.run`."""
@@ -218,5 +223,6 @@ def run_server(
         left_serial_port=left_serial_port,
         right_serial_port=right_serial_port,
         deadzone=deadzone,
+        play_intro=play_intro,
     )
     server.run(host=host, port=port, reload=reload) 
