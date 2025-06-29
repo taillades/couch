@@ -8,13 +8,84 @@
   <link rel="stylesheet" href="/js/leaflet.css" />
   <style>
     html, body, #map { height: 100%; margin: 0; padding: 0; }
+    /* ---------------- Fuel gauge widget ---------------- */
+    #battery-container {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      pointer-events: none;   /* don't block map interactions */
+    }
+
+    .battery {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 12px;
+      color: #fff;
+      text-shadow: 0 0 3px #000;
+    }
+
+    .battery-body {
+      position: relative;
+      width: 40px;
+      height: 16px;
+      border: 2px solid #000;
+      border-radius: 3px;
+      background: #444;
+      overflow: hidden;
+    }
+
+    .battery-level {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 0%;
+      background: #4caf50;
+      transition: width 0.3s ease;
+    }
+
+    .battery-tip {
+      width: 6px;
+      height: 8px;
+      border: 2px solid #000;
+      border-left: none;
+      background: #000;
+      border-radius: 0 2px 2px 0;
+    }
   </style>
 </head>
 <body>
   <div id="map"></div>
 
+  <!-- Fuel gauges -------------------------------------------------- -->
+  <div id="battery-container">
+    <div class="battery">
+      <span class="battery-label">L:</span>
+      <div class="battery-body">
+        <div class="battery-level" id="left-battery-level"></div>
+      </div>
+      <div class="battery-tip"></div>
+      <span class="battery-label" id="left-battery-label">--%</span>
+    </div>
+
+    <div class="battery">
+      <span class="battery-label">R:</span>
+      <div class="battery-body">
+        <div class="battery-level" id="right-battery-level"></div>
+      </div>
+      <div class="battery-tip"></div>
+      <span class="battery-label" id="right-battery-label">--%</span>
+    </div>
+  </div>
+
   <script src="/js/leaflet.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/leaflet-rotatedmarker@0.2.0/leaflet.rotatedMarker.min.js"></script>
+  <script src="/js/rotatedMarker.min.js"></script>
   <script>
     const map = L.map('map').setView([40.7865, -119.2065], 13);  // Golden Spike
 
@@ -118,7 +189,48 @@
 
     updateCouchPosition();        // initial position
     setInterval(updateCouchPosition, 2000);   // every 2 s
-    // ------------------------------------------------------------------
+
+    // --- fuel gauge updates ----------------------------------------
+    /**
+     * Update the UI for a single battery element.
+     * @param {string} side   Either "left" or "right".
+     * @param {number} pct    Charge percentage (0–100).
+     */
+    function updateBattery(side, pct) {
+      const levelEl = document.getElementById(`${side}-battery-level`);
+      const labelEl = document.getElementById(`${side}-battery-label`);
+      if (!levelEl || !labelEl || Number.isNaN(pct)) return;
+
+      const clamped = Math.max(0, Math.min(100, pct));
+      levelEl.style.width = `${clamped}%`;
+
+      let color = '#f44336';   // red by default
+      if (clamped > 50) {
+        color = '#4caf50';     // green
+      } else if (clamped > 20) {
+        color = '#ff9800';     // orange
+      }
+      levelEl.style.backgroundColor = color;
+      labelEl.textContent = `${clamped}%`;
+    }
+
+    /**
+     * Fetch the current fuel gauge levels and update the batteries.
+     */
+    async function updateFuelGauge() {
+      try {
+        const res = await fetch('/fuel_gauge', { cache: 'no-store' });
+        if (!res.ok) return;
+        const data = await res.json();
+        updateBattery('left',  data.left);
+        updateBattery('right', data.right);
+      } catch (err) {
+        console.error('Failed to update fuel gauge', err);
+      }
+    }
+
+    updateFuelGauge();            // initial fetch
+    setInterval(updateFuelGauge, 5000);  // every 5 s
 
     // Add a custom icon for the target marker
     const targetIcon = L.icon({
