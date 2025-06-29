@@ -21,31 +21,20 @@ class ControllerServer:
         *,
         left_serial_port: str,
         right_serial_port: str,
-        distance_between_wheelchairs: float,
         deadzone: float,
-        max_idle_time: float,
-        max_speed: float,
-        max_direction: float,
     ) -> None:
         """Build the unified server.
 
         :param left_serial_port: Serial port for the left wheelchair controller
         :param right_serial_port: Serial port for the right wheelchair controller
-        :param distance_between_wheelchairs: Center-to-center distance between wheelchairs (in meters)
         :param deadzone: Ignore absolute joystick values below this threshold
-        :param max_idle_time: Reset wheelchairs to idle if no commands were issued for that long (seconds)
-        :param max_speed: Maximum speed for the wheelchairs (from shark.MAX_SPEED env var if not provided)
-        :param max_direction: Maximum direction for the wheelchairs (from shark.MAX_DIRECTION env var if not provided)
         """
-        self.left_service = shark.WheelchairController(port=left_serial_port, max_idle_time=max_idle_time)
-        self.right_service = shark.WheelchairController(port=right_serial_port, max_idle_time=max_idle_time )
-
-        self.distance_between_wheelchairs = distance_between_wheelchairs
-        self.differential_drive = differential.DifferentialDrive(distance_between_wheelchairs, max_speed, max_direction)
+        self.left_service = shark.WheelchairController(port=left_serial_port)
+        self.right_service = shark.WheelchairController(port=right_serial_port)
+        self.differential_drive = differential.DifferentialDrive()
 
         self.remote = xbox.XboxRemote()
         self.deadzone = deadzone
-        self.max_speed = max_speed
 
         self.app = FastAPI(title="Couch Unified Server", version="1.0.0", lifespan=self._lifespan)
         self._setup_routes()
@@ -93,6 +82,10 @@ class ControllerServer:
                 self.right_service.control(right_cmd.speed, right_cmd.direction)
                 sleep_time = max(0, 0.02 - (time.time() - start_time))
                 await asyncio.sleep(sleep_time)
+            except asyncio.CancelledError:
+                # Task cancellation: exit the loop gracefully
+                print("Control-loop crashed")
+                break
             except Exception as exc:
                 print(f"Control-loop error: {exc}")
                 await asyncio.sleep(0.02)
@@ -172,15 +165,18 @@ class ControllerServer:
         @app.post("/controller/control")
         async def controller_control(cmd: models.WheelchairCommand) -> Dict[str, Any]:  # noqa: D401
             try:
-                left_speed, right_speed = self.differential_drive.calculate_wheelchair_states(cmd.speed, cmd.direction)
-                self.left_service.control(left_speed, cmd.direction)
-                self.right_service.control(right_speed, cmd.direction)
+                left_cmd, right_cmd = self.differential_drive.calculate_wheelchair_states(cmd.speed, cmd.direction)
+                self.left_service.control(left_cmd.speed, left_cmd.direction)
+                self.right_service.control(right_cmd.speed, right_cmd.direction)
                 return {
                     "message": "Couch command received",
                     "speed": cmd.speed,
-                    "direction": cmd.direction,
-                    "left_speed": left_speed,
-                    "right_speed": right_speed,
+                    "left_direction": left_cmd.direction,
+                    "right_direction": right_cmd.direction,
+                    "left_speed": left_cmd.speed,
+                    "right_speed": right_cmd.speed,
+                    "left_timestamp": left_cmd.timestamp,
+                    "right_timestamp": right_cmd.timestamp,
                 }
             except Exception as exc:
                 raise HTTPException(status_code=500, detail=str(exc)) from exc
@@ -196,7 +192,9 @@ class ControllerServer:
 
     def run(self, *, host: str = "0.0.0.0", port: int = 8000, reload: bool = False) -> None:
         """Run the server with Uvicorn."""
-        uvicorn.run(self.app, host=host, port=port, reload=reload)
+        config = uvicorn.Config(self.app, host=host, port=port, reload=reload, timeout_graceful_shutdown=30)
+        server = uvicorn.Server(config)
+        server.run()
 
 
 def run_server(
@@ -205,21 +203,13 @@ def run_server(
     port: int = 8000,
     left_serial_port: str,
     right_serial_port: str,
-    distance_between_wheelchairs: float,
     deadzone: float,
-    max_idle_time: float,
-    max_speed: float,
-    max_direction: float,
     reload: bool = False,
 ) -> None:
     """Convenience wrapper that instantiates :class:`ControllerServer` and calls :py:meth:`ControllerServer.run`."""
     server = ControllerServer(
         left_serial_port=left_serial_port,
         right_serial_port=right_serial_port,
-        distance_between_wheelchairs=distance_between_wheelchairs,
         deadzone=deadzone,
-        max_idle_time=max_idle_time,
-        max_speed=max_speed,
-        max_direction=max_direction,
     )
     server.run(host=host, port=port, reload=reload) 

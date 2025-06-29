@@ -55,7 +55,7 @@ def build_runtime_packet(speed: int, direction: int) -> bytes:
     return bytes(data)
 
 
-def serial_communication_loop(ser: serial.Serial, wheelchair_state: models.WheelchairCommand, stop_event: threading.Event, max_idle_time: float) -> None:
+def serial_communication_loop(ser: serial.Serial, wheelchair_state: models.WheelchairCommand, stop_event: threading.Event) -> None:
     """
     Continuous loop to send serial packets.
     
@@ -64,12 +64,6 @@ def serial_communication_loop(ser: serial.Serial, wheelchair_state: models.Wheel
     :param stop_event: Event to stop the loop
     """
     while not stop_event.is_set():
-        if (datetime.datetime.now() - wheelchair_state.timestamp).total_seconds() > max_idle_time:
-            print("Max idle time reached, resetting state to idle")
-            wheelchair_state.speed = 0.0
-            wheelchair_state.direction = 0.0
-            wheelchair_state.timestamp = datetime.datetime.now()
-
         speed_byte = normalization.normalize_range(-1.0, 1.0, 0, 1023, wheelchair_state.speed)
         direction_byte = normalization.normalize_range(-1.0, 1.0, 0, 1023, wheelchair_state.direction)
         
@@ -81,7 +75,7 @@ def serial_communication_loop(ser: serial.Serial, wheelchair_state: models.Wheel
 class WheelchairController:
     """Main controller class for wheelchair operations."""
     
-    def __init__(self, port: str = "/dev/ttyUSB0", max_idle_time: float= DEFAULT_MAX_IDLE_TIME) -> None:
+    def __init__(self, port: str = "/dev/ttyUSB0") -> None:
         """
         Initialize the wheelchair controller.
         
@@ -93,7 +87,6 @@ class WheelchairController:
         self.serial_thread: threading.Thread | None = None
         self.stop_event = threading.Event()
         self.wheelchair_state = models.WheelchairCommand(timestamp=datetime.datetime.now())
-        self.max_idle_time = max_idle_time
     
     def start(self) -> bool:
         """Attempt to open the serial port and spawn the TX thread.
@@ -121,7 +114,7 @@ class WheelchairController:
             self.stop_event.clear()
             self.serial_thread = threading.Thread(
                 target=serial_communication_loop,
-                args=(self.serial_connection, self.wheelchair_state, self.stop_event, self.max_idle_time),
+                args=(self.serial_connection, self.wheelchair_state, self.stop_event),
                 daemon=True,
             )
             self.serial_thread.start()

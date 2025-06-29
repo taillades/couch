@@ -17,7 +17,10 @@ Exciting, right? Now we can look like it's a Tuesday 8pm and we're watching TV, 
 
 # References
 
-PCB: https://dirtypcbs.com/store/details/5125/nano-shark-hat-v3-23-zip
+- https://dirtypcbs.com/store/details/5125/nano-shark-hat-v3-23-zip
+- https://www.youtube.com/watch?v=8B36xSlDK-Y
+- https://www.wheelchairdriver.com/board/viewtopic.php?f=2&t=4867&start=570
+- https://comma.ai/openpilot
 
 # Install on your raspberry pi
 
@@ -27,7 +30,7 @@ PCB: https://dirtypcbs.com/store/details/5125/nano-shark-hat-v3-23-zip
 	•	Get it here: https://www.raspberrypi.com/software/
 	•	Install it on your PC/Mac/Linux
 
-2. Insert your Pi’s SD card into your computer
+2. Insert a SD card into your computer
 
 3. Launch Raspberry Pi Imager
 	•	Click “Choose OS” → Select Raspberry Pi OS (32-bit)
@@ -59,28 +62,28 @@ cd ~/src
 git clone git@github.com:taillades/couch.git
 ```
 
-## Edit hyperparams (ex: ports)
-
-```
-cd ~/src/couch
-vim docker-compose.yaml
-```
-
-## Add user to docker and input groups
-
-```
-sudo usermod -aG docker,input $USER
-```
-
-Confirm with:
-```
-groups
-```
-
-
 ## Run the code
-
 ```
-docker-compose up
-```
+# Reload systemd to recognize the new service
+sudo systemctl daemon-reload
 
+# Enable the service to start on boot
+sudo systemctl enable couch-server.service
+
+# Start the service immediately
+sudo systemctl start couch-server.service
+
+# Check the status
+sudo systemctl status couch-server.service
+# Stop the service
+sudo systemctl stop couch-server.service
+
+# Restart the service
+sudo systemctl restart couch-server.service
+
+# View logs
+sudo journalctl -u couch-server.service -f
+
+# Disable auto-start
+sudo systemctl disable couch-server.service
+```
