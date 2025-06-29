@@ -5,8 +5,8 @@ import asyncio
 import aiohttp
 
 # Constants
-CENTER_LAT = 40.8328
-CENTER_LON = -119.1600
+CENTER_LAT = 40.785501
+CENTER_LON = -119.204636
 ZOOM_LEVEL_VS_RADIUS_KM = {
     3: 111 * 360,
     4: 111 * 360,
