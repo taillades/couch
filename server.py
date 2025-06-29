@@ -224,6 +224,16 @@ class ControllerServer:
         async def get_target_position() -> models.Geopoint | None:  # noqa: D401
             return self.target_geopoint
         
+        @app.delete("/target_position")
+        async def clear_target_position() -> Dict[str, str]:  # noqa: D401
+            """Clear the current target.
+
+            Sets :pyattr:`self.target_geopoint` to ``None`` so that
+            subsequent calls to :http:get:`/target_position` return *null*.
+            """
+            self.target_geopoint = None
+            return {"message": "Target position cleared"}
+        
         # -------- Dashboard (static HTML) --------
         @app.get("/dashboard", summary="Live controller dashboard")
         async def dashboard() -> FileResponse:  # noqa: D401
