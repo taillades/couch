@@ -12,6 +12,8 @@ import uvicorn
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
 from pathlib import Path
+from math import radians, cos, sin, sqrt, atan2, pi
+
 
 from libs import differential, models, shark, speaker, xbox
 
@@ -87,15 +89,64 @@ class ControllerServer:
     def _apply_deadzone(self, value: float) -> float:
         """Return 0 if *value* lies inside the deadzone."""
         return 0.0 if abs(value) < self.deadzone else value
+    
+    def compute_autonomous_command(self) -> tuple[float, float]:
+        """
+        Compute speed and direction to approach the target geopoint.
+
+        If the current position is within 3 meters of the target, returns (0, 0).
+        Otherwise, returns (1, direction) where direction steers toward the target.
+        """
+        if self.target_geopoint is None or self.geoposition is None or self.theta is None:
+            return 0.0, 0.0
+
+        # Calculate distance to target (Haversine formula for small distances)
+        lat1 = self.geoposition.lat
+        lon1 = self.geoposition.lon
+        lat2 = self.target_geopoint.lat
+        lon2 = self.target_geopoint.lon
+
+        R = 6371000  # Earth radius in meters
+        dlat = radians(lat2 - lat1)
+        dlon = radians(lon2 - lon1)
+        a = sin(dlat / 2) ** 2 + cos(radians(lat1)) * cos(radians(lat2)) * sin(dlon / 2) ** 2
+        c = 2 * atan2(sqrt(a), sqrt(1 - a))
+        distance = R * c
+
+        if distance < 3.0:
+            return 0.0, 0.0
+
+        # Compute bearing to target
+        y = sin(radians(lon2 - lon1)) * cos(radians(lat2))
+        x = cos(radians(lat1)) * sin(radians(lat2)) - sin(radians(lat1)) * cos(radians(lat2)) * cos(radians(lon2 - lon1))
+        bearing = atan2(y, x)  # in radians
+
+        # Compute direction: difference between current heading (theta) and bearing
+        direction = bearing - self.theta
+        # Normalize direction to [-pi, pi]
+        while direction > pi:
+            direction -= 2 * pi
+        while direction < -pi:
+            direction += 2 * pi
+
+        return 1.0, min(max(direction, -1.0), 1.0)
+    
+    def _get_speed_direction(self) -> tuple[float, float]:
+        """Get the speed and direction from the joystick."""
+        speed, direction = self.remote.get_joystick_speed_direction()
+        speed = self._apply_deadzone(speed)
+        direction = self._apply_deadzone(direction)
+        if speed != 0.0 or direction != 0.0:
+            return speed, direction
+        else:
+            return self.compute_autonomous_command()
 
     async def _control_loop(self) -> None:  # noqa: D401
         """Continuously read joystick and command wheelchairs."""
         while True:
             try:
                 start_time = time.time()
-                speed, direction = self.remote.get_joystick_speed_direction()
-                speed = self._apply_deadzone(speed)
-                direction = self._apply_deadzone(direction)
+                speed, direction = self._get_speed_direction()
                 right_cmd, left_cmd = self.differential_drive.calculate_wheelchair_states(speed, direction)
                 self.left_service.control(left_cmd.speed, left_cmd.direction)
                 self.right_service.control(right_cmd.speed, right_cmd.direction)
