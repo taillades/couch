@@ -4,6 +4,7 @@ import asyncio
 from contextlib import asynccontextmanager
 from typing import Any, Dict
 import time
+import os
 
 from fastapi.staticfiles import StaticFiles
 import uvicorn
@@ -13,7 +14,7 @@ from pathlib import Path
 
 from libs import differential, models, shark, speaker, xbox
 
-TILE_PATH = "/Users/taillades/src/couch/static/tiles"
+STATIC_PATH = os.path.join(os.path.dirname(__file__), "static")
 
 class ControllerServer:
     """Unified server that embeds joystick reading, differential control and direct wheelchair commands."""
@@ -107,15 +108,16 @@ class ControllerServer:
     def _setup_routes(self) -> None:
         app = self.app
 
-        app.mount("/tiles", StaticFiles(directory=TILE_PATH), name="tiles")
+        # -------- static files --------
+        app.mount("/static", StaticFiles(directory=STATIC_PATH), name="static")
+        app.mount("/burning_man_2023_geojson", StaticFiles(directory=os.path.join(STATIC_PATH, "burning_man_2023_geojson")), name="geojson")
+        app.mount("/tiles", StaticFiles(directory=os.path.join(STATIC_PATH, "tiles")), name="tiles")
         
-        #TODO(taillades): update this to the 2025 geojson
-        app.mount("/burning_man_2023_geojson", StaticFiles(directory="/Users/taillades/src/couch/static/burning_man_2023_geojson"), name="geojson")
-
         # -------- health & root --------
+        # TODO(taillades): update burning man geojson to 2025
         @app.get("/")
-        async def root() -> Dict[str, Any]:  # noqa: D401
-            return FileResponse("static/map.html")
+        async def root() -> FileResponse:  # noqa: D401
+            return FileResponse(os.path.join(STATIC_PATH, "map.html"))
 
         @app.get("/health")
         async def health() -> Dict[str, str]:  # noqa: D401

@@ -7,8 +7,29 @@ import aiohttp
 # Constants
 CENTER_LAT = 40.8328
 CENTER_LON = -119.1600
-RADIUS_KM = 20
-ZOOM_LEVELS = [15]
+ZOOM_LEVEL_VS_RADIUS_KM = {
+    3: 3200,
+    4: 1600,
+    5: 800,
+    6: 400,
+    7: 200,
+    8: 320,
+    9: 160,
+    10: 80,
+    11: 40,
+    12: 40,
+    13: 20,
+    14: 20,
+    15: 5,
+    16: 5,
+    17: 5,
+    18: 5,
+    19: 5,
+    20: 5,
+}
+
+TILES_PATH = os.path.join(os.path.dirname(__file__), "..", "static", "tiles")
+
 TILE_SERVER_URL = "https://api.mapbox.com/styles/v1/mapbox/satellite-v9/tiles/256/{z}/{x}/{y}@2x?access_token=pk.eyJ1IjoidGFpbGxhZGVzIiwiYSI6ImNtY2g5dWE1eDB1MHUyanEyN3o4ZDZzangifQ.wAcuJo6gcuSyDkAFEBprig"
 
 
@@ -29,7 +50,7 @@ def get_bounds(lat, lon, radius_km):
     )
 
 # Download a single tile
-def download_tile(z, x, y, folder="/Users/taillades/src/couch/static/tiles"):
+def download_tile(z, x, y, folder=TILES_PATH):
     url = TILE_SERVER_URL.format(z=z, x=x, y=y)
     path = os.path.join(folder, str(z), str(x))
     os.makedirs(path, exist_ok=True)
@@ -44,7 +65,7 @@ def download_tile(z, x, y, folder="/Users/taillades/src/couch/static/tiles"):
             print(f"Failed to download tile z={z} x={x} y={y}: {response.status_code}")
 
 
-async def async_download_tile(z: int, x: int, y: int, folder: str = "/Users/taillades/src/couch/static/tiles") -> None:
+async def async_download_tile(z: int, x: int, y: int, folder: str = TILES_PATH) -> None:
     """
     Download a single tile asynchronously.
 
@@ -98,4 +119,5 @@ async def download_tiles(lat: float, lon: float, radius_km: float, zoom_levels: 
 
 # Run it
 if __name__ == "__main__":
-    asyncio.run(download_tiles(CENTER_LAT, CENTER_LON, RADIUS_KM, ZOOM_LEVELS))
+    for zoom_level, radius_km in ZOOM_LEVEL_VS_RADIUS_KM.items():
+        asyncio.run(download_tiles(CENTER_LAT, CENTER_LON, radius_km, [zoom_level]))
