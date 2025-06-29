@@ -223,6 +223,20 @@ class ControllerServer:
             """Return the HTML dashboard for live telemetry."""
             file_path = Path(__file__).resolve().parent / "static/monitor.html"
             return FileResponse(file_path)
+        
+        @app.get("/fuel_gauge")
+        async def fuel_gauge() -> Dict[str, Any]:  # noqa: D401
+            return {
+                'left': self.left_service.get_spm_general_information()['fuel_gauge'],
+                'right': self.right_service.get_spm_general_information()['fuel_gauge'],
+            }
+        
+        @app.get("/ground_speed")
+        async def ground_speed() -> Dict[str, Any]:  # noqa: D401
+            return {
+                'left': self.left_service.get_spm_general_information()['ground_speed'],
+                'right': self.right_service.get_spm_general_information()['ground_speed'],
+            }
 
     # ----------------------------- public API -----------------------------
 
