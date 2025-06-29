@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 from contextlib import asynccontextmanager
+import math
 from typing import Any, Dict
 import time
 import os
@@ -208,11 +209,12 @@ class ControllerServer:
                 "lon": -119.2065,
             }
         
-        @app.get("/angle")
-        async def angle() -> Dict[str, Any]:  # noqa: D401
+        @app.get("/theta")
+        async def theta() -> Dict[str, Any]:  # noqa: D401
+            """The angle betwen the north-south axis and the wheelchair's direction in radians."""
             # TODO(taillades): get angle from Kalman filter
             return {
-                "angle": 45,
+                "angle": 45 / 180 * math.pi,
             }
         
         # -------- Dashboard (static HTML) --------

@@ -81,10 +81,15 @@
       try {
         const res  = await fetch('/position');
         if (!res.ok) return;                   // ignore 404/500 etc.
-        const { lat, lon, angle } = await res.json();
+        const { lat, lon } = await res.json();
+
+        // Fetch heading (angle in radians) from server and convert to degrees
+        const thetaRes = await fetch('/theta');
+        if (!thetaRes.ok) return;
+        const { angle } = await thetaRes.json(); // angle is in radians
 
         couchMarker.setLatLng([lat, lon]);
-        couchMarker.setRotationAngle(angle);
+        couchMarker.setRotationAngle(180 + angle * 180 / Math.PI);
       } catch (err) {
         console.error('Failed to update couch position', err);
       }
