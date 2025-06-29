@@ -63,6 +63,9 @@ git clone git@github.com:taillades/couch.git
 
 ## Run the code
 ```
+# Update the service file
+sudo cp /home/pi/src/couch/couch-server.service /etc/systemd/system/couch-server.service
+
 # Reload systemd to recognize the new service
 sudo systemctl daemon-reload
 

@@ -1,0 +1,23 @@
+[Unit]
+Description=Couch Controller Server
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+User=pi
+Group=pi
+WorkingDirectory=/home/pi/src/couch
+Environment=PYTHONPATH=/home/pi/src/couch
+ExecStart=/home/pi/src/couch/.venv/bin/python run.py
+Restart=always
+RestartSec=3
+StandardOutput=journal
+StandardError=journalsudo journalctl -u couch-server.service -f
+
+
+# Give the service access to USB devices
+SupplementaryGroups=dialout input
+
+[Install]
+WantedBy=multi-user.target
