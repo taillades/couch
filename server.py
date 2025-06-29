@@ -84,6 +84,7 @@ class ControllerServer:
                 await asyncio.sleep(sleep_time)
             except asyncio.CancelledError:
                 # Task cancellation: exit the loop gracefully
+                print("Control-loop crashed")
                 break
             except Exception as exc:
                 print(f"Control-loop error: {exc}")

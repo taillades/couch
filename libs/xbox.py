@@ -1,7 +1,9 @@
 import threading
 import time
+import importlib
 from typing import Optional, Callable, Dict, Any
-from inputs import get_gamepad
+
+import inputs
 
 
 class XboxRemote:
@@ -56,11 +58,20 @@ class XboxRemote:
         """Main input processing loop."""
         while self._running:
             try:
-                events = get_gamepad()
+                events = inputs.get_gamepad()
                 for event in events:
                     self._process_event(event)
+            except OSError as e:  # Handle unplugged device separately for reconnection logic
+                if e.errno == 19:  # "No such device" – likely unplugged
+                    print("Gamepad disconnected. Waiting for reconnection…")
+                    self._handle_disconnect()
+                    time.sleep(1.0)
+                else:
+                    print(f"OS error reading gamepad: {e}")
+                    time.sleep(0.1)
             except Exception as e:
                 print(f"Error reading gamepad: {e}")
+                inputs.devices._find_devices()
                 time.sleep(0.1)
                 
     def _process_event(self, event) -> None:
@@ -168,9 +179,26 @@ class XboxRemote:
         """
         try:
             # Try to get events to test connection
-            get_gamepad()
+            inputs.get_gamepad()
             return True
         except Exception as e:
             print(f"Error checking connection: {e}")
             return False
+
+    def _handle_disconnect(self) -> None:
+        """Attempt to recover from a game-pad disconnection.
+
+        The *inputs* library caches opened device file-descriptors. When the
+        controller is physically unplugged those descriptors become invalid
+        and every subsequent call to :pyfunc:`inputs.get_gamepad` raises
+        ``OSError(19, 'No such device')``. Reloading the *inputs* module forces
+        a fresh device scan so that, once the pad is re-plugged, input events
+        start flowing again without restarting the whole application.
+        """
+        try:
+            # Reload the module to drop stale file descriptors and rescan
+            globals()["inputs"] = importlib.reload(inputs)
+            print("Re-initialised input devices – waiting for events…")
+        except Exception as e:
+            print(f"Error reloading inputs module: {e}")
 
