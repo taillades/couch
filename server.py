@@ -216,12 +216,12 @@ class ControllerServer:
             return self.theta
         
         @app.post("/target_position")
-        async def target_position(target: models.Geopoint) -> Dict[str, Any]:  # noqa: D401
+        async def set_target_position(target: models.Geopoint) -> Dict[str, Any]:  # noqa: D401
             self.target_geopoint = target
             return {"message": "Target position received"}
         
         @app.get("/target_position")
-        async def target_position() -> models.Geopoint | None:  # noqa: D401
+        async def get_target_position() -> models.Geopoint | None:  # noqa: D401
             return self.target_geopoint
         
         # -------- Dashboard (static HTML) --------
