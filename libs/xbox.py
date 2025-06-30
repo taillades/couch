@@ -38,7 +38,8 @@ class XboxRemote:
         self.button_left = False
         self.button_right = False
         self.button_start = False
-        
+        self.button_right_trigger = False
+        self.button_left_trigger = False
         self._callbacks = callbacks
 
         # Deadzone for joystick (to prevent drift)
@@ -129,6 +130,12 @@ class XboxRemote:
             elif event.code == 'BTN_START':
                 self.button_start = bool(event.state)
                 self._trigger_callback('button_start', self.button_start)
+            elif event.code == 'BTN_TR':
+                self.button_right_trigger = bool(event.state)
+                self._trigger_callback('button_right_trigger', self.button_right_trigger)
+            elif event.code == 'BTN_TL':
+                self.button_left_trigger = bool(event.state)
+                self._trigger_callback('button_left_trigger', self.button_left_trigger)
                 
     def _normalize_axis(self, value: int) -> float:
         """Normalize axis value from raw input to -1.0 to 1.0 range."""

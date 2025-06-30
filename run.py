@@ -37,6 +37,11 @@ def run_controller(
         envvar="CONTROLLER_RIGHT_SERIAL_PORT",
         help="Serial port for the right wheelchair (from CONTROLLER_RIGHT_SERIAL_PORT env var if not provided)",
     ),
+    lights_serial_port: str = typer.Option(
+        None,
+        envvar="CONTROLLER_LIGHT_SERIAL_PORT",
+        help="Serial port for the lights (from CONTROLLER_LIGHT_SERIAL_PORT env var if not provided)",
+    ),
     deadzone: float = typer.Option(
         '0.1',
         envvar="CONTROLLER_DEADZONE",
@@ -55,6 +60,7 @@ def run_controller(
         port=port,
         left_serial_port=left_serial_port,
         right_serial_port=right_serial_port,
+        lights_serial_port=lights_serial_port,
         deadzone=deadzone,
     )
     

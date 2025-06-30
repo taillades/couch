@@ -30,6 +30,32 @@ class LightsSerial:
             self.ser.write(f"{side} {state}\n".encode("utf-8"))
         except Exception:
             pass
+        
+    def get_lights(self, side: Side) -> bool:
+        """
+        Ask the couch the state of a light.
+
+        :param side: The side of the couch ("left" or "right")
+        :returns: True if the light is on, False otherwise
+        """
+        if self.ser is None:
+            return False
+        try:
+            self.ser.write(f"{side}?\n".encode("utf-8"))
+            response = self.ser.readline().decode("utf-8").strip().lower()
+            return response == "on"
+        except Exception:
+            return False
+        
+    def switch_lights(self, side: Side) -> None:
+        """Switch the lights on the couch."""
+        print(f"Switching {side} lights")
+        if self.ser is None:
+            return
+        try:
+            self.ser.write(f"{side}!\n".encode("utf-8"))
+        except Exception:
+            pass
 
     def stop(self) -> None:
         if self.ser is not None:

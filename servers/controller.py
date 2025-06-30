@@ -9,7 +9,7 @@ import asyncio
 import uvicorn
 from fastapi import FastAPI, HTTPException
 
-from libs import differential, models, shark, xbox
+from libs import differential, lights, models, shark, xbox
 
 class ControllerServer:
     """Unified server that embeds joystick reading, differential control and direct wheelchair commands."""
@@ -19,6 +19,7 @@ class ControllerServer:
         *,
         left_serial_port: str,
         right_serial_port: str,
+        lights_serial_port: str,
         deadzone: float,
     ) -> None:
         """Build the unified server.
@@ -29,11 +30,14 @@ class ControllerServer:
         """
         self.left_service = shark.WheelchairController(port=left_serial_port)
         self.right_service = shark.WheelchairController(port=right_serial_port)
-        self.remote = xbox.XboxRemote(
+        self.lights_service = lights.LightsSerial(port=lights_serial_port)
+        self.remote_service = xbox.XboxRemote(
             callbacks={
                 'button_down': lambda _: xbox.play_music_callback('fuck_your_burn'),
                 'button_a': lambda _: self._set_allow_navigation(True),
                 'button_b': lambda _: self._set_allow_navigation(False),
+                'button_right_trigger': lambda _: self.lights_service.switch_lights('right'),
+                'button_left_trigger': lambda _: self.lights_service.switch_lights('left'),
             },
             deadzone=deadzone,
         )
@@ -66,7 +70,7 @@ class ControllerServer:
         On startup, start the Xbox remote listener and both wheelchair controllers.
         On shutdown, stop all hardware services to free the serial ports.
         """
-        self.remote.start()
+        self.remote_service.start()
         self.left_service.start()
         self.right_service.start()
         self._task_loop = asyncio.create_task(self._control_loop())
@@ -77,7 +81,7 @@ class ControllerServer:
                 self._task_loop.cancel()
                 with suppress(asyncio.CancelledError):
                     await self._task_loop
-            self.remote.stop()
+            self.remote_service.stop()
             self.left_service.stop()
             self.right_service.stop()
 
@@ -109,7 +113,7 @@ class ControllerServer:
     
     def _get_speed_direction_from_controller(self) -> tuple[float, float]:
         """Get the speed and direction from the joystick."""
-        speed, direction = self.remote.get_joystick_speed_direction()
+        speed, direction = self.remote_service.get_joystick_speed_direction()
         speed = self._apply_deadzone(speed)
         direction = self._apply_deadzone(direction)
         return speed, direction
@@ -176,22 +180,22 @@ class ControllerServer:
         @app.get("/joystick", response_model=models.JoystickData)
         async def get_joystick() -> models.JoystickData:  # noqa: D401
             """Get the current joystick state."""
-            speed, direction = self.remote.get_joystick_speed_direction()
-            x, y = self.remote.get_joystick_xy()
+            speed, direction = self.remote_service.get_joystick_speed_direction()
+            x, y = self.remote_service.get_joystick_xy()
             return models.JoystickData(
                 speed=speed,
                 direction=direction,
                 x=x,
                 y=y,
-                button_a=self.remote.button_a,
-                button_b=self.remote.button_b,
-                button_x=self.remote.button_x,
-                button_y=self.remote.button_y,
-                button_up=self.remote.button_up,
-                button_down=self.remote.button_down,
-                button_left=self.remote.button_left,
-                button_right=self.remote.button_right,
-                button_start=self.remote.button_start,
+                button_a=self.remote_service.button_a,
+                button_b=self.remote_service.button_b,
+                button_x=self.remote_service.button_x,
+                button_y=self.remote_service.button_y,
+                button_up=self.remote_service.button_up,
+                button_down=self.remote_service.button_down,
+                button_left=self.remote_service.button_left,
+                button_right=self.remote_service.button_right,
+                button_start=self.remote_service.button_start,
             )
 
         @app.post("/wheelchair/left/control")
@@ -243,12 +247,14 @@ def run_server(
     port: int,
     left_serial_port: str,
     right_serial_port: str,
+    lights_serial_port: str,
     deadzone: float,
 ) -> None:
     """Convenience wrapper that instantiates :class:`ControllerServer` and calls :py:meth:`ControllerServer.run`."""
     server = ControllerServer(
         left_serial_port=left_serial_port,
         right_serial_port=right_serial_port,
+        lights_serial_port=lights_serial_port,
         deadzone=deadzone,
     )
     server.run(host=host, port=port) 
