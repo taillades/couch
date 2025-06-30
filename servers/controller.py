@@ -1,8 +1,10 @@
 from __future__ import annotations
 
-from contextlib import asynccontextmanager
+from contextlib import asynccontextmanager, suppress
+import datetime
 from typing import Any, AsyncGenerator, Dict
 import os
+import asyncio
 
 import uvicorn
 from fastapi import FastAPI, HTTPException
@@ -27,16 +29,34 @@ class ControllerServer:
         """
         self.left_service = shark.WheelchairController(port=left_serial_port)
         self.right_service = shark.WheelchairController(port=right_serial_port)
-        self.remote = xbox.XboxRemote()
+        self.remote = xbox.XboxRemote(
+            callbacks={
+                'button_down': lambda _: xbox.play_music_callback('fuck_your_burn'),
+                'button_a': lambda _: self._set_allow_navigation(True),
+                'button_b': lambda _: self._set_allow_navigation(False),
+            },
+            deadzone=deadzone,
+        )
         
         self.differential_drive = differential.DifferentialDrive()
+        self.navigation_command = models.WheelchairCommand(speed=0.0, direction=0.0, timestamp=datetime.datetime.now())
+        self.allow_navigation = True
         
         self.deadzone = deadzone
         
         self.app = FastAPI(title="Couch Unified Server", version="1.0.0", lifespan=self._lifespan)
         self._setup_routes()
 
+        self._task_loop: asyncio.Task | None = None
+
     # ----------------------------- lifespan -----------------------------
+
+    def _set_allow_navigation(self, allow: bool) -> None:
+        """Set the allow navigation flag."""
+        self.allow_navigation = allow
+        if not allow:
+            # Reset the navigation so your dont' have a ghost command sitting around
+            self.navigation_command = models.WheelchairCommand(speed=0.0, direction=0.0, timestamp=datetime.datetime.now())
 
     @asynccontextmanager
     async def _lifespan(self, _app: FastAPI) -> AsyncGenerator[None, Any]:
@@ -49,12 +69,37 @@ class ControllerServer:
         self.remote.start()
         self.left_service.start()
         self.right_service.start()
+        self._task_loop = asyncio.create_task(self._control_loop())
         try:
             yield
         finally:
+            if self._task_loop:
+                self._task_loop.cancel()
+                with suppress(asyncio.CancelledError):
+                    await self._task_loop
             self.remote.stop()
             self.left_service.stop()
             self.right_service.stop()
+
+    async def _control_loop(self) -> None:
+        """Background loop reading joystick and driving the wheelchairs."""
+        while True:
+            try:
+                start = asyncio.get_running_loop().time()
+                speed, direction = self._get_speed_direction_from_controller()
+                if speed == 0.0 and direction == 0.0 and self.allow_navigation:
+                    speed = self.navigation_command.speed
+                    direction = self.navigation_command.direction
+                left_cmd, right_cmd = self.differential_drive.calculate_wheelchair_states(speed, direction)
+                self.left_service.control(left_cmd.speed, left_cmd.direction)
+                self.right_service.control(right_cmd.speed, right_cmd.direction)
+                elapsed = asyncio.get_running_loop().time() - start
+                await asyncio.sleep(max(0.0, 0.02 - elapsed))
+            except asyncio.CancelledError:
+                raise
+            except Exception as exc:
+                print(f"Controller control-loop error: {exc}")
+                await asyncio.sleep(0.02)
 
     # ----------------------------- internal helpers -----------------------------
 
@@ -62,7 +107,7 @@ class ControllerServer:
         """Return 0 if *value* lies inside the deadzone."""
         return 0.0 if abs(value) < self.deadzone else value
     
-    def _get_speed_direction(self) -> tuple[float, float]:
+    def _get_speed_direction_from_controller(self) -> tuple[float, float]:
         """Get the speed and direction from the joystick."""
         speed, direction = self.remote.get_joystick_speed_direction()
         speed = self._apply_deadzone(speed)
@@ -81,6 +126,19 @@ class ControllerServer:
         @app.get("/health")
         async def health() -> Dict[str, str]:  # noqa: D401
             return {"status": "healthy"}
+        
+        @app.get("/navigation/allow")
+        async def get_allow_navigation() -> Dict[str, bool]:  # noqa: D401
+            return {"allow": self.allow_navigation}
+        
+        @app.post("/navigation/command")
+        async def set_navigation_command(cmd: models.WheelchairCommand) -> Dict[str, Any]:  # noqa: D401
+            self.navigation_command = models.WheelchairCommand(
+                speed=cmd.speed,
+                direction=cmd.direction,
+                timestamp=datetime.datetime.now(),
+            )
+            return {"message": "Navigation command received"}
 
         @app.post("/controller/control")
         async def controller_control(cmd: models.WheelchairCommand) -> Dict[str, Any]:  # noqa: D401

@@ -7,15 +7,20 @@ import inputs
 
 from libs.speaker import play_music
 
+def play_music_callback(music_file: str) -> None:
+    """Callback for play music button."""
+    def music_thread():
+        play_music(music_file)
+    thread = threading.Thread(target=music_thread, daemon=True)
+    thread.start()
+
 class XboxRemote:
     """Xbox remote input handler for reading joystick and button states."""
     
-    def __init__(self) -> None:
+    def __init__(self, *, callbacks: Dict[str, Callable[[Any], None]], deadzone: float = 0.1) -> None:
         """Initialize the Xbox remote handler."""
         self._running = False
         self._thread: Optional[threading.Thread] = None
-        
-        self.cruise_mode = False
         
         # Joystick state (left stick)
         self.left_x = 0.0  # -1.0 to 1.0
@@ -34,26 +39,12 @@ class XboxRemote:
         self.button_right = False
         self.button_start = False
         
-        
-        self._callbacks: Dict[str, Callable[[Any], None]] = {
-            'button_down': lambda _: self._play_music_callback('fuck_your_burn'),
-            'button_a': lambda _: self._cruise_mode_callback(True),
-            'button_b': lambda _: self._cruise_mode_callback(False),
-        }
-        # Deadzone for joystick (to prevent drift)
-        self.deadzone = 0.1
-        
-    def _play_music_callback(self, music_file: str) -> None:
-        """Callback for play music button."""
-        def music_thread():
-            play_music(music_file)
-        thread = threading.Thread(target=music_thread, daemon=True)
-        thread.start()
+        self._callbacks = callbacks
 
-    def _cruise_mode_callback(self, value: bool) -> None:
-        """Callback for cruise mode button."""
-        self.cruise_mode = value
-        
+        # Deadzone for joystick (to prevent drift)
+        self.deadzone = deadzone
+
+
     def start(self) -> None:
         """Start listening for remote input in a separate thread."""
         if self._running:
@@ -176,8 +167,8 @@ class XboxRemote:
         Returns:
             tuple: (speed, direction) where speed is x and direction is y
         """
-        speed = -self.left_y if not self.cruise_mode else 1.0
-        direction = -self.left_x
+        speed = -self.left_y
+        direction = self.left_x
         return speed, direction
         
     def add_button_callback(self, button: str, callback: Callable) -> None:
@@ -225,7 +216,6 @@ class XboxRemote:
         a fresh device scan so that, once the pad is re-plugged, input events
         start flowing again without restarting the whole application.
         """
-        self.cruise_mode = False
         try:
             # Reload the module to drop stale file descriptors and rescan
             globals()["inputs"] = importlib.reload(inputs)
