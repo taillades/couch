@@ -9,7 +9,7 @@ User=pi
 Group=pi
 WorkingDirectory=/home/pi/src/couch
 Environment=PYTHONPATH=/home/pi/src/couch
-ExecStart=/home/pi/src/couch/.venv/bin/python run.py
+ExecStart=/home/pi/src/couch/.venv/bin/python run.py run-controller
 Restart=always
 RestartSec=5
 StandardOutput=journal

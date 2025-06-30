@@ -85,31 +85,31 @@ git clone git@github.com:taillades/couch.git
 ## Run the code
 ```
 # Update the service file
-sudo cp /home/pi/src/couch/couch-server.service /etc/systemd/system/couch-server.service
+sudo cp /home/pi/src/couch/couch-controller.service /etc/systemd/system/couch-controller.service
 
 # Reload systemd to recognize the new service
 sudo systemctl daemon-reload
 
 # Enable the service to start on boot
-sudo systemctl enable couch-server.service
+sudo systemctl enable /home/pi/src/couch/couch-controller.service
 
 # Start the service immediately
-sudo systemctl start couch-server.service
+sudo systemctl start couch-controller.service
 
 # Check the status
-sudo systemctl status couch-server.service
+sudo systemctl status couch-controller.service
 
 # Stop the service
-sudo systemctl stop couch-server.service
+sudo systemctl stop couch-controller.service
 
 # Restart the service
-sudo systemctl restart couch-server.service
+sudo systemctl restart couch-controller.service
 
 # View logs
-sudo journalctl -u couch-server.service -f
+sudo journalctl -u couch-controller.service -f
 
 # Disable auto-start
-sudo systemctl disable couch-server.service
+sudo systemctl disable couch-controller.service
 ```
 
 ## Optional: activate bluetooth
